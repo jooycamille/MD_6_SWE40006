@@ -34,15 +34,15 @@ npm install
 ```
 3. Start the Expo Development Server
 ``` bash
-npm run ios (for ios simulator)
-npm run android (for android emulator)
+npm run ios # for ios simulator
+npm run android # for android emulator
 npm run web
 
 # Clear expo cache
 npx expo start --clear
-press i (ios simulator)
-press a (android emulator)
-press w
+# press i (ios simulator)
+# press a (android emulator)
+# press w
 ```
 **Important**: Make sure you have either Xcode (for iOS) or Android Studio (for Android) installed and properly configured to run simulators.
 
