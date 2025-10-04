@@ -3,14 +3,39 @@ pipeline {
     
     environment {
         NODE_VERSION = '20'
-        PATH = "/Users/jooycamille/.nvm/versions/node/v20.19.5/bin:${env.PATH}"
     }
     
     stages {
+        stage('Setup Node.js') {
+            steps {
+                script {
+                    // Try to source NVM and use Node.js
+                    sh '''
+                        export NVM_DIR="$HOME/.nvm"
+                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                        [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+                        
+                        # Install Node.js if not present
+                        if ! command -v node &> /dev/null; then
+                            if command -v nvm &> /dev/null; then
+                                nvm install ${NODE_VERSION}
+                                nvm use ${NODE_VERSION}
+                            else
+                                echo "Node.js not found and NVM not available"
+                                exit 1
+                            fi
+                        fi
+                        
+                        echo "Node.js version: $(node --version)"
+                        echo "NPM version: $(npm --version)"
+                    '''
+                }
+            }
+        }
+        
         stage('Checkout') {
             steps {
                 echo 'Checking out code from GitHub...'
-                // Code is automatically checked out by Jenkins
                 sh 'pwd && ls -la'
             }
         }
@@ -19,7 +44,11 @@ pipeline {
             steps {
                 echo 'Installing frontend dependencies...'
                 dir('frontend') {
-                    sh 'npm ci'
+                    sh '''
+                        export NVM_DIR="$HOME/.nvm"
+                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                        npm ci
+                    '''
                 }
             }
         }
@@ -28,7 +57,11 @@ pipeline {
             steps {
                 echo 'Running code quality checks...'
                 dir('frontend') {
-                    sh 'npm run build' // This includes linting
+                    sh '''
+                        export NVM_DIR="$HOME/.nvm"
+                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                        npm run build
+                    '''
                 }
             }
         }
@@ -37,7 +70,11 @@ pipeline {
             steps {
                 echo 'Running frontend tests...'
                 dir('frontend') {
-                    sh 'CI=true npm test -- --coverage --watchAll=false'
+                    sh '''
+                        export NVM_DIR="$HOME/.nvm"
+                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                        CI=true npm test -- --coverage --watchAll=false
+                    '''
                 }
             }
             post {
@@ -59,7 +96,11 @@ pipeline {
             steps {
                 echo 'Building React application for production...'
                 dir('frontend') {
-                    sh 'npm run build'
+                    sh '''
+                        export NVM_DIR="$HOME/.nvm"
+                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                        npm run build
+                    '''
                 }
             }
             post {
