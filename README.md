@@ -1,52 +1,70 @@
 # MD_6_SWE40006
 Design and Deployment of a Continuous Integration and Delivery Pipeline
 
+## Assignment Timeline
+**Project Duration**: October 4 - October 26, 2025 (22 days)
+**Delivery Deadline**: All 4 levels must be completed by October 26, 2025
+
 ## Assignment Overview
 This project implements a progressive DevOps pipeline through 4 levels, demonstrating continuous integration and delivery practices with a full-stack web application.
 
-## Assignment Levels
+## Assignment Levels & Timeline
 
-### **Level 1: Basic DevOps Pipeline** (Current Focus)
+### **Level 1: Basic DevOps Pipeline** (October 4-10, 2025)
+**Duration**: 7 days
 **Goal**: Create a simple DevOps pipeline including:
-- Code repository server (GitHub)
-- CI/build server (GitHub Actions - to be implemented)
-- Test server (Local testing environment)
-- Production server (Deployment target - to be configured)
+- Code repository server (GitHub) - COMPLETED
+- CI/build server (Jenkins) - IN PROGRESS
+- Test server (Local testing environment) - IN PROGRESS
+- Production server (Deployment target) - PLANNED
 
-**Status**: In Progress
+**Target Completion**: October 10, 2025
 
-### **Level 2: Add Monitoring** (Future)
+### **Level 2: Add Monitoring** (October 11-15, 2025)
+**Duration**: 5 days
 **Goal**: Complete Level 1 + Add instrumentation to production server
 - Performance monitoring
 - Server stats collection
 - Health checks
+- Logging and alerting
 
-**Status**: Pending Level 1
+**Target Completion**: October 15, 2025
 
-### **Level 3: Deploy Application** (Future)
+### **Level 3: Deploy Application** (October 16-21, 2025)
+**Duration**: 6 days
 **Goal**: Complete Level 2 + Deploy simple application using DevOps pipeline
 - Application deployment automation
 - Verify functionality and accessibility
 - End-to-end testing
+- User acceptance testing
 
-**Status**: Pending Level 2
+**Target Completion**: October 21, 2025
 
-### **Level 4: Test Automation** (Future)
-**Goal**: Complete Level 3 + Test automation scripts
+### **Level 4: Test Automation** (October 22-26, 2025)
+**Duration**: 5 days (Final sprint)
+**Goal**: Complete Level 3 + Advanced test automation
 - Automatic deployment triggers
 - Source code change detection
 - Deferred/automatic deployment testing
+- Load testing and performance validation
+- Security testing integration
 
-**Status**: Pending Level 3
+**Final Deadline**: October 26, 2025
+
+## Progress Tracking
+- **Week 1 (Oct 4-10)**: Level 1 Implementation
+- **Week 2 (Oct 11-17)**: Levels 2 & 3 Development  
+- **Week 3 (Oct 18-24)**: Level 4 & Final Testing
+- **Final Days (Oct 25-26)**: Documentation & Submission
 
 ## Tech Stack
 
 - **Frontend**: React 18.2.0 with Create React App
-- **Backend**: Python with Flask framework
-- **Database**: PostgreSQL (configured)
+- **Backend**: Python with Flask framework (Level 2+)
+- **Storage**: Browser Local Storage (Level 1), SQLite/PostgreSQL (Level 2+)
 - **Repository**: GitHub
-- **CI/CD**: GitHub Actions 
-- **Testing**: Jest (Frontend), Pytest (Backend)
+- **CI/CD**: Jenkins (updated from GitHub Actions)
+- **Testing**: Jest (Frontend), Pytest (Backend - Level 2+)
 - **Monitoring**: TBD (Level 2)
 - **Deployment**: TBD (Level 3)
 
@@ -147,6 +165,122 @@ npm start
 
 **Prevention**: Always check compatibility between React versions and react-scripts when upgrading.
 
+## Jenkins Setup & Management
+
+### Prerequisites
+Jenkins LTS is required for this project's CI/CD pipeline (Level 1).
+
+### Installation
+
+#### macOS (via Homebrew)
+```bash
+# Install Jenkins LTS
+brew install jenkins-lts
+
+# Start Jenkins service
+brew services start jenkins-lts
+```
+
+#### Windows
+**Option 1: Download Installer (Recommended)**
+1. Download Jenkins LTS from: https://www.jenkins.io/download/
+2. Run the `.msi` installer
+3. Follow the installation wizard
+4. Jenkins will start automatically as a Windows service
+
+**Option 2: Via Chocolatey (if installed)**
+```powershell
+# Install Jenkins via Chocolatey
+choco install jenkins
+
+# Start Jenkins service
+net start jenkins
+```
+
+### Jenkins Service Management
+
+#### macOS
+```bash
+# Check if Jenkins is installed
+brew list | grep jenkins
+
+# Check Jenkins service status
+brew services list | grep jenkins
+
+# Start Jenkins (if stopped)
+brew services start jenkins-lts
+
+# Stop Jenkins
+brew services stop jenkins-lts
+
+# Restart Jenkins
+brew services restart jenkins-lts
+
+# Check Jenkins version
+brew list --versions jenkins-lts
+```
+
+#### Windows
+```powershell
+# Check Jenkins service status
+sc query jenkins
+
+# Start Jenkins service
+net start jenkins
+
+# Stop Jenkins service
+net stop jenkins
+
+# Restart Jenkins service
+net stop jenkins && net start jenkins
+
+# Check if Jenkins is running (alternative)
+Get-Service jenkins
+```
+
+### Accessing Jenkins
+- **Jenkins Web Interface**: `http://localhost:8080` (all platforms)
+- **Default Port**: 8080 (can be changed in configuration)
+
+### Platform-Specific Configuration Locations
+
+#### macOS
+- **Service Configuration**: `~/Library/LaunchAgents/homebrew.mxcl.jenkins-lts.plist`
+- **Jenkins Home**: `~/.jenkins/`
+- **Initial Admin Password**: `~/.jenkins/secrets/initialAdminPassword`
+
+#### Windows
+- **Service Configuration**: Windows Services (`services.msc`)
+- **Jenkins Home**: `C:\Users\{username}\.jenkins\` or `C:\Program Files\Jenkins\`
+- **Initial Admin Password**: `C:\Users\{username}\.jenkins\secrets\initialAdminPassword`
+
+### Initial Setup (All Platforms)
+1. Navigate to `http://localhost:8080` in your browser
+2. Retrieve the initial admin password:
+
+**macOS:**
+```bash
+cat ~/.jenkins/secrets/initialAdminPassword
+```
+
+**Windows (PowerShell):**
+```powershell
+Get-Content "$env:USERPROFILE\.jenkins\secrets\initialAdminPassword"
+# or if installed system-wide:
+Get-Content "C:\Program Files\Jenkins\secrets\initialAdminPassword"
+```
+
+3. Complete the setup wizard in the web interface
+4. Install recommended plugins for CI/CD pipeline
+5. Create your first admin user
+
+### Troubleshooting
+
+#### Common Issues
+- **Port 8080 already in use**: Change Jenkins port in configuration or stop conflicting service
+- **Permission denied**: Run commands with appropriate privileges (Administrator on Windows)
+- **Service won't start**: Check system logs and ensure Java is installed (Java 11 or 17 required)
+
 ## Running Tests
 
 ### Frontend Tests
@@ -218,4 +352,7 @@ This project is part of SWE40006 Group 6 Semester 2, 2025 Friday 4:30-6:30 PM co
 
 ## Author
 
-**jooycamille** - [GitHub Profile](https://github.com/jooycamille)
+**Joy Mena: jooycamille** - [GitHub Profile](https://github.com/jooycamille)
+**Viet Nguyen: David2k5** - [GitHub Profile](https://github.com/David2k5)
+**Gia Nguyen Nguyen: nnguyengia04** - [GitHub Profile](https://github.com/nnguyengia04)
+**Audrey Christie** - [GitHub Profile](https://github.com/)
