@@ -1,21 +1,54 @@
 # MD_6_SWE40006
 Design and Deployment of a Continuous Integration and Delivery Pipeline
 
-![CI/CD Pipeline](https://github.com/jooycamille/MD_6_SWE40006/workflows/CI/CD%20Pipeline/badge.svg)
-![PR Checks](https://github.com/jooycamille/MD_6_SWE40006/workflows/Pull%20Request%20Checks/badge.svg)
+## 🎯 Assignment Overview
+This project implements a progressive DevOps pipeline through 4 levels, demonstrating continuous integration and delivery practices with a full-stack web application.
 
-## Overview
-This project demonstrates the implementation of a comprehensive CI/CD pipeline using GitHub Actions for a full-stack web application. The application consists of a React frontend and a Flask backend, showcasing modern DevOps practices and automated deployment strategies.
+## Assignment Levels
 
-## Tech Stack
+### **Level 1: Basic DevOps Pipeline** (Current Focus)
+**Goal**: Create a simple DevOps pipeline including:
+- Code repository server (GitHub)
+- CI/build server (GitHub Actions - to be implemented)
+- Test server (Local testing environment)
+- Production server (Deployment target - to be configured)
+
+**Status**: In Progress
+
+### **Level 2: Add Monitoring** (Future)
+**Goal**: Complete Level 1 + Add instrumentation to production server
+- Performance monitoring
+- Server stats collection
+- Health checks
+
+**Status**: Pending Level 1
+
+### **Level 3: Deploy Application** (Future)
+**Goal**: Complete Level 2 + Deploy simple application using DevOps pipeline
+- Application deployment automation
+- Verify functionality and accessibility
+- End-to-end testing
+
+**Status**: Pending Level 2
+
+### **Level 4: Test Automation** (Future)
+**Goal**: Complete Level 3 + Test automation scripts
+- Automatic deployment triggers
+- Source code change detection
+- Deferred/automatic deployment testing
+
+**Status**: Pending Level 3
+
+## 🛠️ Tech Stack
 
 - **Frontend**: React 18.2.0 with Create React App
 - **Backend**: Python with Flask framework
 - **Database**: PostgreSQL (configured)
-- **CI/CD**: GitHub Actions
-- **Containerization**: Docker (configured)
+- **Repository**: GitHub (Level 1)
+- **CI/CD**: GitHub Actions (Level 1 - to implement)
 - **Testing**: Jest (Frontend), Pytest (Backend)
-- **Code Quality**: ESLint, Flake8
+- **Monitoring**: TBD (Level 2)
+- **Deployment**: TBD (Level 3)
 
 ## Project Structure
 ```
@@ -31,15 +64,10 @@ This project demonstrates the implementation of a comprehensive CI/CD pipeline u
 │   ├── /src                # React source code
 │   ├── package.json        # Node.js dependencies
 │   └── [React application files]
-├── /.github
-│   └── /workflows          # GitHub Actions CI/CD pipelines
-│       ├── ci-cd.yml       # Main CI/CD pipeline
-│       ├── pr-checks.yml   # Pull request validation
-│       └── dependency-updates.yml # Automated dependency updates
 └── README.md
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+ and npm
@@ -138,23 +166,7 @@ pytest --cov=.             # With coverage
 pytest --cov=. --cov-report=html  # HTML coverage report
 ```
 
-## CI/CD Pipeline
-
-This project includes comprehensive GitHub Actions workflows:
-
-- **CI/CD Pipeline** (`ci-cd.yml`): Full testing, building, and deployment
-- **PR Checks** (`pr-checks.yml`): Fast validation for pull requests
-- **Dependency Updates** (`dependency-updates.yml`): Automated weekly dependency updates
-
-### Pipeline Features:
-- Multi-version Python testing (3.9, 3.10, 3.11)
-- Frontend build and test automation
-- Security vulnerability scanning with Trivy
-- Code coverage reporting
-- Automated dependency management
-- Docker build preparation
-
-## Deployment
+## Development
 
 ### Local Development
 ```bash
@@ -176,13 +188,13 @@ The project is configured for containerized deployment using Docker. Deployment 
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-### Development Workflow
-- All pull requests trigger automated testing
-- Code must pass all CI checks before merging
+### Development Best Practices
+- Write meaningful commit messages
+- Test your changes locally before pushing
 - Follow conventional commit messages
 - Maintain test coverage above 80%
 
-## 📝 Environment Variables
+## Environment Variables
 
 ### Backend (.env)
 Create a `.env` file in the backend directory using `.env.example` as a template:
@@ -199,18 +211,6 @@ SECRET_KEY=your_secret_key_here
 Environment variables can be added to `.env` files in the frontend directory following Create React App conventions (prefixed with `REACT_APP_`). 
 
 **Important**: Never commit actual environment files to the repository. Always use `.env.example` templates and add `.env` to your `.gitignore`.
-
-## 📊 Project Status
-
-- [x] Project structure setup
-- [x] Frontend React application
-- [x] Backend Flask API structure
-- [x] GitHub Actions CI/CD pipeline
-- [x] Docker configuration
-- [x] Testing framework setup
-- [ ] API endpoint implementation
-- [ ] Database integration
-- [ ] Production deployment
 
 ## 📄 License
 
