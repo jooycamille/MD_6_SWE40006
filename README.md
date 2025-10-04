@@ -1,7 +1,7 @@
 # MD_6_SWE40006
 Design and Deployment of a Continuous Integration and Delivery Pipeline
 
-## 🎯 Assignment Overview
+## Assignment Overview
 This project implements a progressive DevOps pipeline through 4 levels, demonstrating continuous integration and delivery practices with a full-stack web application.
 
 ## Assignment Levels
@@ -39,13 +39,13 @@ This project implements a progressive DevOps pipeline through 4 levels, demonstr
 
 **Status**: Pending Level 3
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Frontend**: React 18.2.0 with Create React App
 - **Backend**: Python with Flask framework
 - **Database**: PostgreSQL (configured)
-- **Repository**: GitHub (Level 1)
-- **CI/CD**: GitHub Actions (Level 1 - to implement)
+- **Repository**: GitHub
+- **CI/CD**: GitHub Actions 
 - **Testing**: Jest (Frontend), Pytest (Backend)
 - **Monitoring**: TBD (Level 2)
 - **Deployment**: TBD (Level 3)
@@ -212,10 +212,10 @@ Environment variables can be added to `.env` files in the frontend directory fol
 
 **Important**: Never commit actual environment files to the repository. Always use `.env.example` templates and add `.env` to your `.gitignore`.
 
-## 📄 License
+## License
 
-This project is part of SWE40006 coursework and follows university guidelines.
+This project is part of SWE40006 Group 6 Semester 2, 2025 Friday 4:30-6:30 PM coursework and follows university guidelines.
 
-## 👨‍💻 Author
+## Author
 
 **jooycamille** - [GitHub Profile](https://github.com/jooycamille)
