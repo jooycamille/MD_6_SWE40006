@@ -2,7 +2,8 @@ pipeline {
     agent any
     
     environment {
-        NODE_VERSION = '18'
+        NODE_VERSION = '20'
+        PATH = "/Users/jooycamille/.nvm/versions/node/v20.19.5/bin:${env.PATH}"
     }
     
     stages {
@@ -85,11 +86,11 @@ pipeline {
             cleanWs() // Clean workspace after build
         }
         success {
-            echo '🎉 Pipeline executed successfully!'
+            echo 'Pipeline executed successfully!'
             echo 'Todo App built and tested successfully!'
         }
         failure {
-            echo '❌ Pipeline failed!'
+            echo 'Pipeline failed!'
             echo 'Check the logs above for details.'
         }
     }
