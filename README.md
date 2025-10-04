@@ -355,4 +355,4 @@ This project is part of SWE40006 Group 6 Semester 2, 2025 Friday 4:30-6:30 PM co
 **Joy Mena: jooycamille** - [GitHub Profile](https://github.com/jooycamille)
 **Viet Nguyen: David2k5** - [GitHub Profile](https://github.com/David2k5)
 **Gia Nguyen Nguyen: nnguyengia04** - [GitHub Profile](https://github.com/nnguyengia04)
-**Audrey Christie** - [GitHub Profile](https://github.com/)
+**Audrey Christie: audreychristie3** - [GitHub Profile](https://github.com/audreychristie3)
