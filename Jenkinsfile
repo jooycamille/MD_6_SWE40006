@@ -1,18 +1,34 @@
 pipeline {
     agent any
     
-    tools {
-        nodejs 'Node-20'  // This references the NodeJS installation configured in Global Tool Configuration
+    environment {
+        NODE_VERSION = '20'
     }
     
     stages {
-        stage('Verify Node.js') {
+        stage('Setup Node.js') {
             steps {
-                sh '''
-                    echo "Node.js version: $(node --version)"
-                    echo "NPM version: $(npm --version)"
-                    echo "Node.js path: $(which node)"
-                '''
+                script {
+                    sh '''
+                        export NVM_DIR="$HOME/.nvm"
+                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                        [ -s "$NVM_DIR/bash_completion" ] && . "$NVM_DIR/bash_completion"
+                        
+                        # Install Node.js if not present
+                        if ! command -v node &> /dev/null; then
+                            if command -v nvm &> /dev/null; then
+                                nvm install ${NODE_VERSION}
+                                nvm use ${NODE_VERSION}
+                            else
+                                echo "Node.js not found and NVM not available"
+                                exit 1
+                            fi
+                        fi
+                        
+                        echo "Node.js version: $(node --version)"
+                        echo "NPM version: $(npm --version)"
+                    '''
+                }
             }
         }
         
@@ -27,7 +43,11 @@ pipeline {
             steps {
                 echo 'Installing frontend dependencies with npm install...'
                 dir('frontend') {
-                    sh 'npm install'
+                    sh '''
+                        export NVM_DIR="$HOME/.nvm"
+                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                        npm install
+                    '''
                 }
             }
         }
@@ -36,7 +56,11 @@ pipeline {
             steps {
                 echo 'Building React application for production...'
                 dir('frontend') {
-                    sh 'npm run build'
+                    sh '''
+                        export NVM_DIR="$HOME/.nvm"
+                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                        npm run build
+                    '''
                 }
             }
             post {
@@ -61,7 +85,11 @@ pipeline {
             steps {
                 echo 'Running frontend tests...'
                 dir('frontend') {
-                    sh 'CI=true npm test -- --coverage --watchAll=false'
+                    sh '''
+                        export NVM_DIR="$HOME/.nvm"
+                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                        CI=true npm test -- --coverage --watchAll=false
+                    '''
                 }
             }
             post {
