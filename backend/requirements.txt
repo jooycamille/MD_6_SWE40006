@@ -4,3 +4,4 @@ pytest==8.3.2         # for testing
 requests==2.32.3      # if backend makes HTTP calls
 flask-cors==5.0.0     # if you need custom CORS policies
 psycopg2-binary==2.9.9 # if you connect to Postgres
+Flask-SQLAlchemy==3.1.1
