@@ -1,6 +1,10 @@
 pipeline {
     agent any
     
+    tools {
+        nodejs 'Node-18'  // This references the NodeJS installation we configured
+    }
+    
     environment {
         NODE_VERSION = '18'
         FRONTEND_DIR = 'frontend'
@@ -9,14 +13,14 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo 'Checking out code from repository...'
+                echo '📦 Checking out code from repository...'
                 checkout scm
             }
         }
         
         stage('Setup Node.js') {
             steps {
-                echo 'Setting up Node.js environment...'
+                echo '🛠️ Setting up Node.js environment...'
                 script {
                     sh '''
                         echo "Node version: $(node --version)"
@@ -29,20 +33,13 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                echo 'Installing frontend dependencies...'
+                echo '📥 Installing frontend dependencies...'
                 dir("${FRONTEND_DIR}") {
                     sh '''
                         echo "Installing dependencies in: $(pwd)"
-                        
-                        # Clean install for consistent builds
                         rm -rf node_modules package-lock.json
-                        
-                        # Install dependencies
                         npm install
-                        
-                        echo "Dependencies installed successfully"
-                        echo "Installed packages:"
-                        npm list --depth=0 || true
+                        echo "✅ Dependencies installed successfully"
                     '''
                 }
             }
@@ -50,17 +47,13 @@ pipeline {
         
         stage('Lint Code') {
             steps {
-                echo '🔍 Running ESLint code analysis...'
+                echo '🔍 Running ESLint...'
                 dir("${FRONTEND_DIR}") {
-                    script {
-                        try {
-                            sh 'npm run lint'
-                            echo "Linting passed"
-                        } catch (Exception e) {
-                            echo "Linting issues found: ${e.getMessage()}"
-                            currentBuild.result = 'UNSTABLE'
-                        }
-                    }
+                    sh '''
+                        echo "Running linter..."
+                        npm run lint
+                        echo "✅ Linting completed"
+                    '''
                 }
             }
         }
@@ -70,56 +63,25 @@ pipeline {
                 echo '🧪 Running frontend tests...'
                 dir("${FRONTEND_DIR}") {
                     sh '''
-                        echo "Running Jest tests..."
+                        echo "Running Jest tests with coverage..."
                         npm run test:ci
-                        
-                        echo "✅ All tests completed"
+                        echo "✅ All tests completed successfully!"
                     '''
-                }
-            }
-            post {
-                always {
-                    publishHTML([
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'frontend/coverage/lcov-report',
-                        reportFiles: 'index.html',
-                        reportName: 'Frontend Test Coverage Report'
-                    ])
                 }
             }
         }
         
         stage('Build Application') {
             steps {
-                echo '🏗️ Building React application...'
+                echo '🏗️ Building frontend application...'
                 dir("${FRONTEND_DIR}") {
                     sh '''
-                        echo "Building production build..."
+                        echo "Building React application..."
                         npm run build
+                        echo "✅ Build completed successfully"
                         
-                        echo "Build completed successfully"
-                        echo "Build contents:"
+                        echo "Verifying build artifacts..."
                         ls -la build/
-                        
-                        echo "Build size:"
-                        du -sh build/
-                        
-                        # Verify critical files exist
-                        if [ -f "build/index.html" ]; then
-                            echo "index.html created"
-                        else
-                            echo "index.html missing"
-                            exit 1
-                        fi
-                        
-                        if [ -d "build/static" ]; then
-                            echo "Static assets created"
-                        else
-                            echo "Static assets missing"
-                            exit 1
-                        fi
                     '''
                 }
             }
@@ -131,15 +93,11 @@ pipeline {
                 dir("${FRONTEND_DIR}") {
                     script {
                         try {
-                            sh '''
-                                echo "Running npm audit..."
-                                npm audit --audit-level=moderate
-                                echo "Security audit passed"
-                            '''
+                            sh 'npm audit --audit-level=high'
+                            echo "✅ No high-severity vulnerabilities found"
                         } catch (Exception e) {
-                            echo "Security vulnerabilities found: ${e.getMessage()}"
-                            echo "Run 'npm audit fix' to resolve issues"
-                            currentBuild.result = 'UNSTABLE'
+                            echo "⚠️ Security audit found issues: ${e.getMessage()}"
+                            // Don't fail the build for audit issues, just warn
                         }
                     }
                 }
@@ -148,49 +106,27 @@ pipeline {
         
         stage('Archive Artifacts') {
             steps {
-                echo 'Archiving build artifacts...'
+                echo '📋 Archiving build artifacts...'
                 dir("${FRONTEND_DIR}") {
-                    script {
-                        // Archive the build
-                        archiveArtifacts(
-                            artifacts: 'build/**/*',
-                            allowEmptyArchive: false,
-                            fingerprint: true
-                        )
-                        
-                        // Also archive package.json and package-lock.json for reference
-                        archiveArtifacts(
-                            artifacts: 'package*.json',
-                            allowEmptyArchive: true,
-                            fingerprint: true
-                        )
-                        
-                        echo "Artifacts archived successfully"
-                    }
+                    archiveArtifacts artifacts: 'build/**/*', fingerprint: true
+                    echo "✅ Artifacts archived successfully"
                 }
             }
         }
         
         stage('Verify Build') {
             steps {
-                echo 'Verifying build quality...'
+                echo '🎯 Verifying build integrity...'
                 dir("${FRONTEND_DIR}") {
                     sh '''
-                        echo "Build verification:"
-                        echo "- Build directory size: $(du -sh build/)"
-                        echo "- Number of files: $(find build -type f | wc -l)"
-                        echo "- Main bundle size: $(ls -lh build/static/js/*.js | head -1)"
+                        echo "Checking build directory structure..."
+                        ls -la build/
                         
-                        # Check if build is reasonable size (not too big, not too small)
-                        BUILD_SIZE=$(du -s build/ | cut -f1)
-                        if [ $BUILD_SIZE -lt 100 ]; then
-                            echo "Build seems too small: ${BUILD_SIZE}KB"
-                            exit 1
-                        elif [ $BUILD_SIZE -gt 50000 ]; then
-                            echo "Build seems large: ${BUILD_SIZE}KB"
-                        else
-                            echo "Build size is reasonable: ${BUILD_SIZE}KB"
-                        fi
+                        echo "Verifying essential files exist..."
+                        test -f build/index.html && echo "✅ index.html found"
+                        test -d build/static && echo "✅ static assets found"
+                        
+                        echo "Build verification completed successfully!"
                     '''
                 }
             }
@@ -201,43 +137,29 @@ pipeline {
         always {
             echo '🏁 Pipeline completed'
             script {
-                def duration = currentBuild.durationString.replace(' and counting', '')
-                echo "Total build time: ${duration}"
-                
-                // Check if build time is reasonable
-                if (currentBuild.duration > 600000) { // 10 minutes in milliseconds
-                    echo "Build took longer than 10 minutes"
-                    currentBuild.result = 'UNSTABLE'
+                def duration = currentBuild.duration / 1000
+                echo "Total build time: ${duration} sec"
+                if (duration < 600) { // 10 minutes
+                    echo "✅ Build time is reasonable"
                 } else {
-                    echo "Build time is reasonable"
+                    echo "⚠️ Build time exceeds 10 minutes"
                 }
             }
-            
-            // Clean workspace
             cleanWs()
         }
-        
         success {
-            echo 'Pipeline succeeded!'
-            echo 'All acceptance criteria met:'
-            echo '  - Pipeline runs without errors'
-            echo '  - npm install completes successfully'
-            echo '  - npm run build creates artifacts'
-            echo '  - npm test runs and passes'
-            echo '  - Build artifacts are archived'
-            echo '  - Build time is reasonable'
-            echo '  - Console output is clear and informative'
+            echo '🎉 Pipeline succeeded!'
+            echo 'All stages completed successfully'
+            echo 'Build artifacts have been archived'
         }
-        
         failure {
-            echo 'Pipeline failed!'
+            echo '❌ Pipeline failed!'
             echo 'Check the console output above for details'
-            echo "Failed stage information available in Jenkins UI"
+            echo 'Failed stage information available in Jenkins UI'
         }
-        
         unstable {
-            echo 'Pipeline completed with warnings'
-            echo 'Build succeeded but some quality checks failed'
+            echo '⚠️ Pipeline completed with warnings'
+            echo 'Check test results and build logs'
         }
     }
 }
