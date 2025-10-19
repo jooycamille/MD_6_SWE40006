@@ -13,14 +13,14 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "test:ci": "CI=true react-scripts test --coverage --watchAll=false",
-    "test:coverage": "react-scripts test --coverage --watchAll=false",
-    "eject": "react-scripts eject",
-    "lint": "eslint src/**/*.{js,jsx} --quiet",
-    "lint:fix": "eslint src/**/*.{js,jsx} --fix"
+     "start": "react-scripts start",
+      "build": "react-scripts build",
+      "test": "react-scripts test",
+      "test:ci": "CI=true react-scripts test --coverage --watchAll=false",
+      "test:coverage": "react-scripts test --coverage --watchAll=false",
+      "eject": "react-scripts eject",
+      "lint": "eslint src/**/*.js --quiet",
+      "lint:fix": "eslint src/**/*.js --fix"
   },
   "eslintConfig": {
     "extends": [
