@@ -140,6 +140,13 @@ pipeline {
                 echo 'E2E tests passed!'
             }
         }
+        stage('Setup AWS CLI') {
+            steps {
+                sh '''
+                pip install awscli
+            '''
+            }
+        }
         stage('Deploy to Production') {
             steps {
                 input message: 'Approve deployment to PRODUCTION?'
