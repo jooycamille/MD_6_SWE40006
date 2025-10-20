@@ -6,42 +6,32 @@ Design and Deployment of a Continuous Integration and Delivery Pipeline
 **Delivery Deadline**: All 4 levels must be completed by October 26, 2025
 
 ## Assignment Overview
-This project implements a progressive DevOps pipeline through 4 levels, demonstrating continuous integration and delivery practices with a full-stack web application.
+This project implements a progressive DevOps pipeline through 4 levels, demonstrating continuous integration and delivery practices with a React web application.
 
 ## Assignment Levels & Timeline
 
-### **Level 1: Basic DevOps Pipeline** (October 4-10, 2025)
-**Duration**: 7 days
+### **Level 1: Basic DevOps Pipeline**
 **Goal**: Create a simple DevOps pipeline including:
-- Code repository server (GitHub) - COMPLETED
-- CI/build server (Jenkins) - IN PROGRESS
-- Test server (Local testing environment) - IN PROGRESS
-- Production server (Deployment target) - PLANNED
+- Code repository server (GitHub)
+- CI/build server (Jenkins)
+- Test server (Local testing environment)
+- Production server (Deployment target)
 
-**Target Completion**: October 10, 2025
-
-### **Level 2: Add Monitoring** (October 11-15, 2025)
-**Duration**: 5 days
+### **Level 2: Add Monitoring**
 **Goal**: Complete Level 1 + Add instrumentation to production server
 - Performance monitoring
 - Server stats collection
 - Health checks
 - Logging and alerting
 
-**Target Completion**: October 15, 2025
-
-### **Level 3: Deploy Application** (October 16-21, 2025)
-**Duration**: 6 days
+### **Level 3: Deploy Application**
 **Goal**: Complete Level 2 + Deploy simple application using DevOps pipeline
 - Application deployment automation
 - Verify functionality and accessibility
 - End-to-end testing
 - User acceptance testing
 
-**Target Completion**: October 21, 2025
-
-### **Level 4: Test Automation** (October 22-26, 2025)
-**Duration**: 5 days (Final sprint)
+### **Level 4: Test Automation**
 **Goal**: Complete Level 3 + Advanced test automation
 - Automatic deployment triggers
 - Source code change detection
@@ -49,39 +39,29 @@ This project implements a progressive DevOps pipeline through 4 levels, demonstr
 - Load testing and performance validation
 - Security testing integration
 
-**Final Deadline**: October 26, 2025
-
-## Progress Tracking
-- **Week 1 (Oct 4-10)**: Level 1 Implementation
-- **Week 2 (Oct 11-17)**: Levels 2 & 3 Development  
-- **Week 3 (Oct 18-24)**: Level 4 & Final Testing
-- **Final Days (Oct 25-26)**: Documentation & Submission
-
 ## Tech Stack
 
 - **Frontend**: React 18.2.0 with Create React App
-- **Backend**: Python with Flask framework (Level 2+)
-- **Storage**: Browser Local Storage (Level 1), SQLite/PostgreSQL (Level 2+)
+- **Storage**: Browser Local Storage
 - **Repository**: GitHub
-- **CI/CD**: Jenkins (updated from GitHub Actions)
-- **Testing**: Jest (Frontend), Pytest (Backend - Level 2+)
-- **Monitoring**: TBD (Level 2)
-- **Deployment**: TBD (Level 3)
+- **CI/CD**: Jenkins
+- **Testing**: Jest with React Testing Library
+- **Monitoring**: Performance API & Custom Dashboard (Level 2)
+- **Deployment**: Static File Server (Level 3)
+- **Remote Access**: ngrok (for exposing local services)
 
 ## Project Structure
 ```
 /MD_6_SWE40006
-├── /backend
-│   ├── .env.example          # Environment variables template
-│   ├── .venv/               # Python virtual environment
-│   ├── docker-compose.yml   # Docker configuration
-│   ├── requirements.txt     # Python dependencies
-│   └── [Flask application files]
 ├── /frontend
 │   ├── /public             # Static files
 │   ├── /src                # React source code
+│   │   ├── /components     # React components
+│   │   ├── /hooks          # Custom React hooks
+│   │   └── App.js          # Main application component
 │   ├── package.json        # Node.js dependencies
 │   └── [React application files]
+├── Jenkinsfile             # CI/CD pipeline configuration
 └── README.md
 ```
 
@@ -89,8 +69,9 @@ This project implements a progressive DevOps pipeline through 4 levels, demonstr
 
 ### Prerequisites
 - Node.js 18+ and npm
-- Python 3.9+
 - Git
+- Jenkins (for CI/CD pipeline)
+- ngrok (for remote access and testing)
 
 ### Installation
 
@@ -100,23 +81,7 @@ git clone https://github.com/jooycamille/MD_6_SWE40006.git
 cd MD_6_SWE40006
 ```
 
-2. **Backend Setup (Python/Flask)**
-```bash
-cd backend
-   
-# Create and activate virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   
-# Install dependencies
-pip install -r requirements.txt
-   
-# Copy environment file
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-3. **Frontend Setup (React)**
+2. **Frontend Setup (React)**
 ```bash
 cd frontend
    
@@ -126,6 +91,191 @@ npm install
 # Start development server
 npm start
 ```
+
+## ngrok Setup & Usage
+
+### What is ngrok?
+ngrok is a tool that creates secure tunnels from public URLs to your local services. This is particularly useful for:
+- Testing webhooks locally
+- Sharing your development server with team members
+- Remote access to Jenkins dashboard
+- Testing production deployments from external sources
+
+### Installation
+
+#### macOS (via Homebrew)
+```bash
+# Install ngrok
+brew install ngrok/ngrok/ngrok
+
+# Verify installation
+ngrok version
+```
+
+#### Windows
+**Option 1: Download from Website (Recommended)**
+1. Download ngrok from: https://ngrok.com/download
+2. Extract the executable to a folder in your PATH
+3. Verify installation: `ngrok version`
+
+**Option 2: Via Chocolatey (if installed)**
+```powershell
+# Install ngrok via Chocolatey
+choco install ngrok
+
+# Verify installation
+ngrok version
+```
+
+#### Linux (Ubuntu/Debian)
+```bash
+# Download and install ngrok
+curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+sudo apt update && sudo apt install ngrok
+
+# Verify installation
+ngrok version
+```
+
+### Authentication Setup
+1. Sign up for a free ngrok account at: https://ngrok.com/
+2. Get your authtoken from the dashboard
+3. Configure ngrok with your authtoken:
+
+```bash
+ngrok config add-authtoken YOUR_AUTHTOKEN_HERE
+```
+
+### Usage Examples
+
+#### Expose Jenkins Server (Port 8080)
+```bash
+# Start ngrok tunnel for Jenkins
+ngrok http 8080
+
+# This will provide a public URL like: https://abc123.ngrok-free.app
+# Access Jenkins remotely via this URL
+```
+
+#### Expose React Development Server (Port 3000)
+```bash
+# Start ngrok tunnel for React app
+ngrok http 3000
+
+# Access your React app remotely via the provided URL
+```
+
+#### Expose Production Server (Custom Port)
+```bash
+# If your production server runs on port 8080
+ngrok http 8080 --region us
+
+# With custom subdomain (requires paid plan)
+ngrok http 3000 --subdomain myapp-demo
+```
+
+### Advanced ngrok Configuration
+
+#### Create ngrok Configuration File
+Create `~/.ngrok2/ngrok.yml` (or `%USERPROFILE%\.ngrok2\ngrok.yml` on Windows):
+
+```yaml
+version: "2"
+authtoken: YOUR_AUTHTOKEN_HERE
+tunnels:
+  jenkins:
+    addr: 8080
+    proto: http
+    bind_tls: true
+    inspect: true
+  react-app:
+    addr: 3000
+    proto: http
+    bind_tls: true
+    inspect: true
+  production:
+    addr: 8081
+    proto: http
+    bind_tls: true
+    inspect: false
+```
+
+#### Start Multiple Tunnels
+```bash
+# Start specific tunnel
+ngrok start jenkins
+
+# Start multiple tunnels
+ngrok start jenkins react-app
+
+# Start all configured tunnels
+ngrok start --all
+```
+
+### Security Considerations
+
+#### Basic Authentication
+```bash
+# Add basic auth to your tunnel
+ngrok http 3000 --auth "username:password"
+```
+
+#### IP Restrictions (Pro feature)
+```bash
+# Restrict access to specific IPs
+ngrok http 3000 --cidr-allow 192.168.1.0/24
+```
+
+### Integration with DevOps Pipeline
+
+#### Jenkins Webhook Configuration
+1. Start ngrok tunnel for Jenkins: `ngrok http 8080`
+2. Copy the HTTPS URL (e.g., `https://abc123.ngrok-free.app`)
+3. In GitHub repository settings, add webhook:
+   - Payload URL: `https://abc123.ngrok-free.app/github-webhook/`
+   - Content type: `application/json`
+   - Events: `Just the push event`
+
+#### Testing Production Deployment
+```bash
+# After deploying your app on port 8080
+ngrok http 8080 --log stdout
+
+# Share the public URL for testing
+# Monitor access logs in real-time
+```
+
+### Monitoring ngrok Tunnels
+
+#### Web Interface
+Access the ngrok web interface at: `http://localhost:4040`
+- View active tunnels
+- Inspect HTTP requests/responses
+- Monitor traffic and performance
+
+#### Command Line Monitoring
+```bash
+# List active tunnels
+curl http://localhost:4040/api/tunnels
+
+# Get tunnel status in JSON format
+curl http://localhost:4040/api/tunnels | jq
+```
+
+### Troubleshooting
+
+#### Common Issues
+- **Tunnel not accessible**: Check firewall settings and ensure the local service is running
+- **Rate limiting**: Free accounts have connection limits; consider upgrading for production use
+- **Tunnel disconnects**: Free tunnels have session limits; use `--region` flag to connect to closer servers
+
+#### Best Practices
+- Use HTTPS URLs for production testing
+- Implement authentication for sensitive services
+- Monitor tunnel usage through the web interface
+- Keep ngrok updated to the latest version
+- Use configuration files for consistent setups
 
 ## Common Issues & Troubleshooting
 
@@ -241,6 +391,7 @@ Get-Service jenkins
 ### Accessing Jenkins
 - **Jenkins Web Interface**: `http://localhost:8080` (all platforms)
 - **Default Port**: 8080 (can be changed in configuration)
+- **Remote Access**: Use ngrok to expose Jenkins publicly
 
 ### Platform-Specific Configuration Locations
 
@@ -291,28 +442,22 @@ npm test -- --coverage     # With coverage report
 npm test -- --ci --watchAll=false  # CI mode
 ```
 
-### Backend Tests
-```bash
-cd backend
-source .venv/bin/activate
-pytest                      # Run all tests
-pytest --cov=.             # With coverage
-pytest --cov=. --cov-report=html  # HTML coverage report
-```
-
 ## Development
 
 ### Local Development
 ```bash
 # Frontend (runs on http://localhost:3000)
 cd frontend && npm start
+```
 
-# Backend (configure your Flask app to run on desired port)
-cd backend && source .venv/bin/activate && python app.py
+### Production Build
+```bash
+# Create optimized production build
+cd frontend && npm run build
 ```
 
 ### Production Deployment
-The project is configured for containerized deployment using Docker. Deployment configurations are included in the CI/CD pipeline and can be customized for various cloud platforms (AWS, Azure, Heroku, etc.).
+The project is configured for static file deployment. Build artifacts can be served using any static file server or deployed to various hosting platforms (Netlify, Vercel, GitHub Pages, AWS S3, etc.).
 
 ## Contributing
 
@@ -330,21 +475,35 @@ The project is configured for containerized deployment using Docker. Deployment 
 
 ## Environment Variables
 
-### Backend (.env)
-Create a `.env` file in the backend directory using `.env.example` as a template:
-```env
-# Copy from .env.example and fill in your values
-FLASK_APP=app.py
-FLASK_ENV=development
-DATABASE_URL=postgresql://username:password@localhost/database_name
-SECRET_KEY=your_secret_key_here
-# Add other environment-specific variables as needed
-```
-
 ### Frontend
 Environment variables can be added to `.env` files in the frontend directory following Create React App conventions (prefixed with `REACT_APP_`). 
 
+**Example .env:**
+```env
+REACT_APP_API_URL=http://localhost:3000
+REACT_APP_VERSION=1.0.0
+```
+
 **Important**: Never commit actual environment files to the repository. Always use `.env.example` templates and add `.env` to your `.gitignore`.
+
+## Application Features
+
+### Todo Application
+The React application implements a fully functional todo list with:
+- Add new todos
+- Mark todos as complete/incomplete
+- Delete todos
+- Edit existing todos
+- Filter todos by status (All, Active, Completed)
+- Persistent storage using localStorage
+- Responsive design
+
+### Performance Monitoring (Level 2)
+- Real-time performance metrics
+- Page load time tracking
+- Memory usage monitoring
+- Component render time measurement
+- Performance dashboard with export capabilities
 
 ## License
 

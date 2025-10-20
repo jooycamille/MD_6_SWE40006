@@ -84,10 +84,10 @@ function TodoList({ todos, onDelete, onToggleComplete }) {
         <p className="no-todos">No tasks available</p>
       ) : (
         todos.map(todo => (
-          <TodoItem 
-            key={todo.id} 
-            todo={todo} 
-            onDelete={onDelete} 
+          <TodoItem
+            key={todo.id}
+            todo={todo}
+            onDelete={onDelete}
             onToggleComplete={onToggleComplete}
           />
         ))
@@ -126,15 +126,10 @@ function TodoInput({ onAddTodo }) {
 
 // Main App Component
 function App() {
-  const [todos, setTodos] = useState([]);
-
-  // Load todos from localStorage on component mount
-  useEffect(() => {
+  const [todos, setTodos] = useState(() => {
     const savedTodos = localStorage.getItem('todos');
-    if (savedTodos) {
-      setTodos(JSON.parse(savedTodos));
-    }
-  }, []);
+    return savedTodos ? JSON.parse(savedTodos) : [];
+  });
 
   // Save todos to localStorage whenever todos change
   useEffect(() => {
@@ -159,7 +154,7 @@ function App() {
 
   // Toggle todo completion
   const toggleComplete = (id) => {
-    setTodos(todos.map(todo => 
+    setTodos(todos.map(todo =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     ));
   };
@@ -173,12 +168,12 @@ function App() {
       <header className="app-header">
         <h1>To-do List</h1>
       </header>
-      
+
       <main className="app-main">
         <TodoInput onAddTodo={addTodo} />
         <TodoList todos={todos} onDelete={deleteTodo} onToggleComplete={toggleComplete} />
       </main>
-      
+
       <footer className="app-footer">
         <p><strong>Outstanding Tasks: </strong>{todoCount} | <strong>Completed: </strong>{completedCount}</p>
       </footer>
