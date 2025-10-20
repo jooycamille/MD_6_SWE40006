@@ -143,7 +143,7 @@ pipeline {
         stage('Setup AWS CLI') {
             steps {
                 sh '''
-                pip install awscli
+                python -m pip install awscli
             '''
             }
         }
