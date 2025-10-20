@@ -6,42 +6,32 @@ Design and Deployment of a Continuous Integration and Delivery Pipeline
 **Delivery Deadline**: All 4 levels must be completed by October 26, 2025
 
 ## Assignment Overview
-This project implements a progressive DevOps pipeline through 4 levels, demonstrating continuous integration and delivery practices with a full-stack web application.
+This project implements a progressive DevOps pipeline through 4 levels, demonstrating continuous integration and delivery practices with a React web application.
 
 ## Assignment Levels & Timeline
 
-### **Level 1: Basic DevOps Pipeline** (October 4-10, 2025)
-**Duration**: 7 days
+### **Level 1: Basic DevOps Pipeline**
 **Goal**: Create a simple DevOps pipeline including:
-- Code repository server (GitHub) - COMPLETED
-- CI/build server (Jenkins) - IN PROGRESS
-- Test server (Local testing environment) - IN PROGRESS
-- Production server (Deployment target) - PLANNED
+- Code repository server (GitHub)
+- CI/build server (Jenkins)
+- Test server (Local testing environment)
+- Production server (Deployment target)
 
-**Target Completion**: October 10, 2025
-
-### **Level 2: Add Monitoring** (October 11-15, 2025)
-**Duration**: 5 days
+### **Level 2: Add Monitoring**
 **Goal**: Complete Level 1 + Add instrumentation to production server
 - Performance monitoring
 - Server stats collection
 - Health checks
 - Logging and alerting
 
-**Target Completion**: October 15, 2025
-
-### **Level 3: Deploy Application** (October 16-21, 2025)
-**Duration**: 6 days
+### **Level 3: Deploy Application**
 **Goal**: Complete Level 2 + Deploy simple application using DevOps pipeline
 - Application deployment automation
 - Verify functionality and accessibility
 - End-to-end testing
 - User acceptance testing
 
-**Target Completion**: October 21, 2025
-
-### **Level 4: Test Automation** (October 22-26, 2025)
-**Duration**: 5 days (Final sprint)
+### **Level 4: Test Automation**
 **Goal**: Complete Level 3 + Advanced test automation
 - Automatic deployment triggers
 - Source code change detection
@@ -49,39 +39,28 @@ This project implements a progressive DevOps pipeline through 4 levels, demonstr
 - Load testing and performance validation
 - Security testing integration
 
-**Final Deadline**: October 26, 2025
-
-## Progress Tracking
-- **Week 1 (Oct 4-10)**: Level 1 Implementation
-- **Week 2 (Oct 11-17)**: Levels 2 & 3 Development  
-- **Week 3 (Oct 18-24)**: Level 4 & Final Testing
-- **Final Days (Oct 25-26)**: Documentation & Submission
-
 ## Tech Stack
 
 - **Frontend**: React 18.2.0 with Create React App
-- **Backend**: Python with Flask framework (Level 2+)
-- **Storage**: Browser Local Storage (Level 1), SQLite/PostgreSQL (Level 2+)
+- **Storage**: Browser Local Storage
 - **Repository**: GitHub
-- **CI/CD**: Jenkins (updated from GitHub Actions)
-- **Testing**: Jest (Frontend), Pytest (Backend - Level 2+)
-- **Monitoring**: TBD (Level 2)
-- **Deployment**: TBD (Level 3)
+- **CI/CD**: Jenkins
+- **Testing**: Jest with React Testing Library
+- **Monitoring**: Performance API & Custom Dashboard (Level 2)
+- **Deployment**: Static File Server (Level 3)
 
 ## Project Structure
 ```
 /MD_6_SWE40006
-├── /backend
-│   ├── .env.example          # Environment variables template
-│   ├── .venv/               # Python virtual environment
-│   ├── docker-compose.yml   # Docker configuration
-│   ├── requirements.txt     # Python dependencies
-│   └── [Flask application files]
 ├── /frontend
 │   ├── /public             # Static files
 │   ├── /src                # React source code
+│   │   ├── /components     # React components
+│   │   ├── /hooks          # Custom React hooks
+│   │   └── App.js          # Main application component
 │   ├── package.json        # Node.js dependencies
 │   └── [React application files]
+├── Jenkinsfile             # CI/CD pipeline configuration
 └── README.md
 ```
 
@@ -89,8 +68,8 @@ This project implements a progressive DevOps pipeline through 4 levels, demonstr
 
 ### Prerequisites
 - Node.js 18+ and npm
-- Python 3.9+
 - Git
+- Jenkins (for CI/CD pipeline)
 
 ### Installation
 
@@ -100,23 +79,7 @@ git clone https://github.com/jooycamille/MD_6_SWE40006.git
 cd MD_6_SWE40006
 ```
 
-2. **Backend Setup (Python/Flask)**
-```bash
-cd backend
-   
-# Create and activate virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   
-# Install dependencies
-pip install -r requirements.txt
-   
-# Copy environment file
-cp .env.example .env
-# Edit .env with your configuration
-```
-
-3. **Frontend Setup (React)**
+2. **Frontend Setup (React)**
 ```bash
 cd frontend
    
@@ -291,28 +254,22 @@ npm test -- --coverage     # With coverage report
 npm test -- --ci --watchAll=false  # CI mode
 ```
 
-### Backend Tests
-```bash
-cd backend
-source .venv/bin/activate
-pytest                      # Run all tests
-pytest --cov=.             # With coverage
-pytest --cov=. --cov-report=html  # HTML coverage report
-```
-
 ## Development
 
 ### Local Development
 ```bash
 # Frontend (runs on http://localhost:3000)
 cd frontend && npm start
+```
 
-# Backend (configure your Flask app to run on desired port)
-cd backend && source .venv/bin/activate && python app.py
+### Production Build
+```bash
+# Create optimized production build
+cd frontend && npm run build
 ```
 
 ### Production Deployment
-The project is configured for containerized deployment using Docker. Deployment configurations are included in the CI/CD pipeline and can be customized for various cloud platforms (AWS, Azure, Heroku, etc.).
+The project is configured for static file deployment. Build artifacts can be served using any static file server or deployed to various hosting platforms (Netlify, Vercel, GitHub Pages, AWS S3, etc.).
 
 ## Contributing
 
@@ -330,21 +287,35 @@ The project is configured for containerized deployment using Docker. Deployment 
 
 ## Environment Variables
 
-### Backend (.env)
-Create a `.env` file in the backend directory using `.env.example` as a template:
-```env
-# Copy from .env.example and fill in your values
-FLASK_APP=app.py
-FLASK_ENV=development
-DATABASE_URL=postgresql://username:password@localhost/database_name
-SECRET_KEY=your_secret_key_here
-# Add other environment-specific variables as needed
-```
-
 ### Frontend
 Environment variables can be added to `.env` files in the frontend directory following Create React App conventions (prefixed with `REACT_APP_`). 
 
+**Example .env:**
+```env
+REACT_APP_API_URL=http://localhost:3000
+REACT_APP_VERSION=1.0.0
+```
+
 **Important**: Never commit actual environment files to the repository. Always use `.env.example` templates and add `.env` to your `.gitignore`.
+
+## Application Features
+
+### Todo Application
+The React application implements a fully functional todo list with:
+- Add new todos
+- Mark todos as complete/incomplete
+- Delete todos
+- Edit existing todos
+- Filter todos by status (All, Active, Completed)
+- Persistent storage using localStorage
+- Responsive design
+
+### Performance Monitoring (Level 2)
+- Real-time performance metrics
+- Page load time tracking
+- Memory usage monitoring
+- Component render time measurement
+- Performance dashboard with export capabilities
 
 ## License
 
