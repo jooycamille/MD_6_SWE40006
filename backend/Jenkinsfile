@@ -1,0 +1,23 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Start Backend Services') {
+            steps {
+                sh 'docker-compose up -d'
+            }
+        }
+
+        stage('Run Backend Tests') {
+            steps {
+                sh 'docker-compose exec backend pytest tests/'
+            }
+        }
+
+        stage('Stop Services') {
+            steps {
+                sh 'docker-compose down'
+            }
+        }
+    }
+}
