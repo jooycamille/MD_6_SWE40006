@@ -48,6 +48,7 @@ This project implements a progressive DevOps pipeline through 4 levels, demonstr
 - **Testing**: Jest with React Testing Library
 - **Monitoring**: Performance API & Custom Dashboard (Level 2)
 - **Deployment**: Static File Server (Level 3)
+- **Remote Access**: ngrok (for exposing local services)
 
 ## Project Structure
 ```
@@ -70,6 +71,7 @@ This project implements a progressive DevOps pipeline through 4 levels, demonstr
 - Node.js 18+ and npm
 - Git
 - Jenkins (for CI/CD pipeline)
+- ngrok (for remote access and testing)
 
 ### Installation
 
@@ -89,6 +91,191 @@ npm install
 # Start development server
 npm start
 ```
+
+## ngrok Setup & Usage
+
+### What is ngrok?
+ngrok is a tool that creates secure tunnels from public URLs to your local services. This is particularly useful for:
+- Testing webhooks locally
+- Sharing your development server with team members
+- Remote access to Jenkins dashboard
+- Testing production deployments from external sources
+
+### Installation
+
+#### macOS (via Homebrew)
+```bash
+# Install ngrok
+brew install ngrok/ngrok/ngrok
+
+# Verify installation
+ngrok version
+```
+
+#### Windows
+**Option 1: Download from Website (Recommended)**
+1. Download ngrok from: https://ngrok.com/download
+2. Extract the executable to a folder in your PATH
+3. Verify installation: `ngrok version`
+
+**Option 2: Via Chocolatey (if installed)**
+```powershell
+# Install ngrok via Chocolatey
+choco install ngrok
+
+# Verify installation
+ngrok version
+```
+
+#### Linux (Ubuntu/Debian)
+```bash
+# Download and install ngrok
+curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
+echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+sudo apt update && sudo apt install ngrok
+
+# Verify installation
+ngrok version
+```
+
+### Authentication Setup
+1. Sign up for a free ngrok account at: https://ngrok.com/
+2. Get your authtoken from the dashboard
+3. Configure ngrok with your authtoken:
+
+```bash
+ngrok config add-authtoken YOUR_AUTHTOKEN_HERE
+```
+
+### Usage Examples
+
+#### Expose Jenkins Server (Port 8080)
+```bash
+# Start ngrok tunnel for Jenkins
+ngrok http 8080
+
+# This will provide a public URL like: https://abc123.ngrok-free.app
+# Access Jenkins remotely via this URL
+```
+
+#### Expose React Development Server (Port 3000)
+```bash
+# Start ngrok tunnel for React app
+ngrok http 3000
+
+# Access your React app remotely via the provided URL
+```
+
+#### Expose Production Server (Custom Port)
+```bash
+# If your production server runs on port 8080
+ngrok http 8080 --region us
+
+# With custom subdomain (requires paid plan)
+ngrok http 3000 --subdomain myapp-demo
+```
+
+### Advanced ngrok Configuration
+
+#### Create ngrok Configuration File
+Create `~/.ngrok2/ngrok.yml` (or `%USERPROFILE%\.ngrok2\ngrok.yml` on Windows):
+
+```yaml
+version: "2"
+authtoken: YOUR_AUTHTOKEN_HERE
+tunnels:
+  jenkins:
+    addr: 8080
+    proto: http
+    bind_tls: true
+    inspect: true
+  react-app:
+    addr: 3000
+    proto: http
+    bind_tls: true
+    inspect: true
+  production:
+    addr: 8081
+    proto: http
+    bind_tls: true
+    inspect: false
+```
+
+#### Start Multiple Tunnels
+```bash
+# Start specific tunnel
+ngrok start jenkins
+
+# Start multiple tunnels
+ngrok start jenkins react-app
+
+# Start all configured tunnels
+ngrok start --all
+```
+
+### Security Considerations
+
+#### Basic Authentication
+```bash
+# Add basic auth to your tunnel
+ngrok http 3000 --auth "username:password"
+```
+
+#### IP Restrictions (Pro feature)
+```bash
+# Restrict access to specific IPs
+ngrok http 3000 --cidr-allow 192.168.1.0/24
+```
+
+### Integration with DevOps Pipeline
+
+#### Jenkins Webhook Configuration
+1. Start ngrok tunnel for Jenkins: `ngrok http 8080`
+2. Copy the HTTPS URL (e.g., `https://abc123.ngrok-free.app`)
+3. In GitHub repository settings, add webhook:
+   - Payload URL: `https://abc123.ngrok-free.app/github-webhook/`
+   - Content type: `application/json`
+   - Events: `Just the push event`
+
+#### Testing Production Deployment
+```bash
+# After deploying your app on port 8080
+ngrok http 8080 --log stdout
+
+# Share the public URL for testing
+# Monitor access logs in real-time
+```
+
+### Monitoring ngrok Tunnels
+
+#### Web Interface
+Access the ngrok web interface at: `http://localhost:4040`
+- View active tunnels
+- Inspect HTTP requests/responses
+- Monitor traffic and performance
+
+#### Command Line Monitoring
+```bash
+# List active tunnels
+curl http://localhost:4040/api/tunnels
+
+# Get tunnel status in JSON format
+curl http://localhost:4040/api/tunnels | jq
+```
+
+### Troubleshooting
+
+#### Common Issues
+- **Tunnel not accessible**: Check firewall settings and ensure the local service is running
+- **Rate limiting**: Free accounts have connection limits; consider upgrading for production use
+- **Tunnel disconnects**: Free tunnels have session limits; use `--region` flag to connect to closer servers
+
+#### Best Practices
+- Use HTTPS URLs for production testing
+- Implement authentication for sensitive services
+- Monitor tunnel usage through the web interface
+- Keep ngrok updated to the latest version
+- Use configuration files for consistent setups
 
 ## Common Issues & Troubleshooting
 
@@ -204,6 +391,7 @@ Get-Service jenkins
 ### Accessing Jenkins
 - **Jenkins Web Interface**: `http://localhost:8080` (all platforms)
 - **Default Port**: 8080 (can be changed in configuration)
+- **Remote Access**: Use ngrok to expose Jenkins publicly
 
 ### Platform-Specific Configuration Locations
 
