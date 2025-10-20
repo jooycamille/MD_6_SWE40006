@@ -130,7 +130,12 @@ pipeline {
             steps {
                 echo 'Running End-to-End tests against Test Environment...'
                 dir('frontend') {
-                    sh 'npm run e2e-test' 
+                    sh '''
+                export NVM_DIR=/Users/jooycamille/.nvm
+                [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  
+                nvm use default --silent                         
+                npm run e2e-test
+            ''' 
                 }
                 echo 'E2E tests passed!'
             }
