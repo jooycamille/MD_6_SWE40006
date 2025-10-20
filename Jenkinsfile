@@ -6,6 +6,9 @@ pipeline {
     }
     
     stages {
+        // ====================================
+        // SHARED SETUP STAGE
+        // ====================================
         stage('Setup Node.js') {
             steps {
                 script {
@@ -39,6 +42,9 @@ pipeline {
             }
         }
         
+        // ====================================
+        // BUILD SERVER SECTION
+        // ====================================
         stage('Install Dependencies') {
             steps {
                 echo 'Installing frontend dependencies with npm install...'
@@ -71,6 +77,9 @@ pipeline {
             }
         }
         
+        // ====================================
+        // TEST SERVER SECTION
+        // ====================================
         stage('Lint & Format Check') {
             steps {
                 echo 'Running code quality checks...'
@@ -107,6 +116,9 @@ pipeline {
             }
         }
         
+        // ====================================
+        // PRODUCTION SERVER SECTION - TODO
+        // ====================================
         stage('Deploy to Test Environment') {
             steps {
                 echo 'Deploying to test environment...'
