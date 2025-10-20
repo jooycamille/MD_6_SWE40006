@@ -132,8 +132,8 @@ pipeline {
                 dir('frontend') {
                     sh '''
                 export NVM_DIR=/Users/jooycamille/.nvm
-                [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  
-                nvm use default --silent                         
+                [ -s "$NVM_DIR/nvm.sh" ] && source "$NVM_DIR/nvm.sh"  
+                nvm use default --silent                          
                 npm run e2e-test
             ''' 
                 }
