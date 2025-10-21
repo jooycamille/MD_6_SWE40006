@@ -2,10 +2,30 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 
 // Todo Item Component
-function TodoItem({ todo, onDelete, onToggleComplete }) {
+function TodoItem({ todo, onDelete, onToggleComplete, onEdit }) {
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(todo.text);
   const [editDate, setEditDate] = useState(todo.createdAt);
+
+  const convertToDateInput = (ddmmyyyy) => {
+    if (!ddmmyyyy) return '';
+    const parts = ddmmyyyy.split('/');
+    if (parts.length === 3) {
+      const [day, month, year] = parts;
+      return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    return ddmmyyyy;
+  }
+
+  const convertFromDateInput = (yyyyMMdd) => {
+  if (!yyyyMMdd) return '';
+  const parts = yyyyMMdd.split('-');
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+  }
+  return yyyyMMdd;
+}
 
   const handleDelete = () => {
     onDelete(todo.id);
@@ -13,7 +33,26 @@ function TodoItem({ todo, onDelete, onToggleComplete }) {
 
   const handleToggleComplete = () => {
     onToggleComplete(todo.id);
-  };
+  }; 
+
+  const handleSave = () => {
+    if (editText.trim()) {
+      const formattedDate = convertFromDateInput(editDate);
+      onEdit(todo.id, editText.trim(), formattedDate);
+      setIsEditing(false);
+    }
+  }
+
+  const handleCancel = () => {
+    setEditText(todo.text);
+    setEditDate(todo.createdAt);
+    setIsEditing(false);
+  }
+
+  const handleEditClick = () => {
+    setEditDate(convertToDateInput(todo.createdAt));
+    setIsEditing(true);
+  }
 
   return (
     <div className={`todo-item ${todo.completed ? 'completed' : ''}`}>
@@ -54,16 +93,16 @@ function TodoItem({ todo, onDelete, onToggleComplete }) {
       <div className="todo-actions">
         {isEditing ? (
           <>
-            <button className="save-button" onClick={() => setIsEditing(false)}>
+            <button className="save-button" onClick={handleSave}>
               Save
             </button>
-            <button className="cancel-button" onClick={() => setIsEditing(false)}>
+            <button className="cancel-button" onClick={handleCancel}>
               Cancel
             </button>
           </>
         ) : (
           <>
-            <button className="edit-button" onClick={() => setIsEditing(true)}>
+            <button className="edit-button" onClick={handleEditClick}>
               Edit
             </button>
             <button className="delete-button" onClick={handleDelete}>
@@ -77,7 +116,7 @@ function TodoItem({ todo, onDelete, onToggleComplete }) {
 }
 
 // Todo List Component
-function TodoList({ todos, onDelete, onToggleComplete }) {
+function TodoList({ todos, onDelete, onToggleComplete, onEdit }) {
   return (
     <div className="todo-list">
       {todos.length === 0 ? (
@@ -89,6 +128,7 @@ function TodoList({ todos, onDelete, onToggleComplete }) {
             todo={todo}
             onDelete={onDelete}
             onToggleComplete={onToggleComplete}
+            onEdit={onEdit}
           />
         ))
       )}
@@ -159,6 +199,12 @@ function App() {
     ));
   };
 
+  const editTodo = (id, nextText, nextDate) => {
+    setTodos(todos.map(todo =>
+      todo.id === id ? { ...todo, text: nextText, createdAt: nextDate } : todo
+    ));
+  }
+
   // Calculate counts
   const completedCount = todos.filter(todo => todo.completed).length;
   const todoCount = todos.filter(todo => !todo.completed).length;
@@ -171,7 +217,7 @@ function App() {
 
       <main className="app-main">
         <TodoInput onAddTodo={addTodo} />
-        <TodoList todos={todos} onDelete={deleteTodo} onToggleComplete={toggleComplete} />
+        <TodoList todos={todos} onDelete={deleteTodo} onToggleComplete={toggleComplete} onEdit={editTodo} />
       </main>
 
       <footer className="app-footer">

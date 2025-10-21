@@ -3,6 +3,9 @@ pipeline {
     
     environment {
         NODE_VERSION = '20'
+        BUILD_START_TIME = "${System.currentTimeMillis()}"
+        PERFORMANCE_LOG = 'build-performance.log'
+        MONITORING_ENABLED = 'true'
     }
     
     stages {
@@ -20,7 +23,7 @@ pipeline {
                         # Install Node.js if not present
                         if ! command -v node &> /dev/null; then
                             if command -v nvm &> /dev/null; then
-                                nvm install ${NODE_VERSION}
+                                nvm install ${NODE_VERSION} 
                                 nvm use ${NODE_VERSION}
                             else
                                 echo "Node.js not found and NVM not available"
@@ -46,19 +49,103 @@ pipeline {
         // ====================================
         stage('Install Dependencies') {
             steps {
-                echo 'Installing frontend dependencies with npm install...'
-                dir('frontend') {
+                script {
+                    def startTime = System.currentTimeMillis()
+
+                    // Log system resource
                     sh '''
-                        export NVM_DIR="$HOME/.nvm"
-                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                        npm install
+                        echo "=== BUILD SERVER METRICS ===" > ${PERFORMANCE_LOG}
+                        echo "Build Number: ${BUILD_NUMBER}" >> ${PERFORMANCE_LOG}
+                        echo "Build Start: $(date)" >> ${PERFORMANCE_LOG}
+                        echo "Node Version: $(node --version)" >> ${PERFORMANCE_LOG}
+                        echo "Available Memory: $(free -h | grep Mem)" >> ${PERFORMANCE_LOG}
+                        echo "CPU Cores: $(nproc)" >> ${PERFORMANCE_LOG}
+                        echo "Disk Space: $(df -h . | tail -1)" >> ${PERFORMANCE_LOG}
+                        echo "============================" >> ${PERFORMANCE_LOG}
                     '''
+                    
+                    // existing dependency installation steps
+                    echo 'Installing frontend dependencies...'
+                    dir('frontend') {
+                        sh '''
+                            export NVM_DIR="$HOME/.nvm"
+                            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                            npm install
+                        '''
+                    }
+
+                    def endTime = System.currentTimeMillis()
+                    def duration = (endTime - startTime) / 1000
+                    sh "echo 'Dependency installation took ${duration} seconds' >> ${PERFORMANCE_LOG}"
                 }
             }
         }
         
         stage('Build Application') {
             steps {
+                script {
+                    def startTime = System.currentTimeMillis()
+
+                    // Start resource monitoring
+                    sh '''
+                        (while true; do
+                            echo "$(date): CPU: $(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1)%, MEM: $(free | grep Mem | awk '{printf("%.1f%%", $3/$2 * 100.0)}')" >> build-resources.log
+                            sleep 3
+                        done ) &
+                        MONITOR_PID=$!
+                        echo $MONITOR_PID > monitor.pid
+                    '''
+
+                    // existing build steps
+                    echo 'Building React application for production...'
+                    dir('frontend') {
+                        sh '''
+                            export NVM_DIR="$HOME/.nvm"
+                            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                            npm run build
+                        '''
+                    }
+
+                    // Stop resource monitoring
+                    sh '''
+                        kill $(cat monitor.pid) 2>/dev/null || true
+                    '''
+
+                    def endTime = System.currentTimeMillis()
+                    def duration = (endTime - startTime) / 1000
+
+                    // Collect build metrics
+                    sh '''
+                        BUILD_SIZE=$(du -sh frontend/build | cut -f1)
+                        echo "Build Size: ${BUILD_SIZE}" >> ${PERFORMANCE_LOG}
+                        echo 'Build process took ${duration} seconds' >> ${PERFORMANCE_LOG}
+                    '''
+                }
+                
+            }
+        }
+
+        stage('Performance Analysis') {
+            steps {
+                script {
+                    sh '''
+                        # Generate build metrics JSON
+                        cat > build-metrics.json <<EOF
+                        {
+                            "build_number": "${BUILD_NUMBER}",
+                            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
+                            "server": "build",
+                            "metrics": {
+                                "duration": "$(grep 'Build Duration' $PERFORMANCE_LOG | cut -d':' -f2 | tr -d ' s')",
+                                "dependencyInstall": $(grep 'Dependency Installation' $PERFORMANCE_LOG | cut -d':' -f2 | tr -d ' s'),
+                                "buildSize": "$(grep 'Build Size' $PERFORMANCE_LOG | cut -d':' -f2 | tr -d ' ')"
+                            }
+                        }
+                        EOF
+                    '''
+
+                    // Archive performance logs and metrics
+                    archiveArtifacts artifacts: 'build-metrics.json, build-performance.log', fingerprint: true
                 echo 'Building React application for production...'
                 dir('frontend') {
                     sh '''
