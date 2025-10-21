@@ -161,11 +161,11 @@ pipeline {
 
                     // 2. Deployment Command (Example: AWS S3)
                     dir('frontend/build') {
-                    bat '''
-                        "C:\\Program Files\\Amazon\\AWSCLI\\bin\\aws.exe" s3 sync . s3://md06swe40006 --delete --acl public-read
+                    sh '''
+                    # Unix path for the AWS CLI
+                    /usr/local/bin/aws s3 sync . s3://md06swe40006 --delete --acl public-read
                     '''
                     }
-                }
                 echo 'Production deployment completed!'
             }
         }
