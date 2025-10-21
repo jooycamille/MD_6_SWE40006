@@ -162,9 +162,8 @@ pipeline {
                     // 2. Deployment Command (Example: AWS S3)
                     dir('frontend/build') {
                     sh '''
-                    # FINAL SOLUTION: Use the Unix 'sh' command to call the Windows Command Prompt (cmd)
-                    # to execute the deployment command natively.
-                    cmd /c "\"C:\\Program Files\\Amazon\\AWSCLI\\bin\\aws.exe\" s3 sync . s3://md06swe40006 --delete --acl public-read"
+                    # Pure Unix command
+                    aws s3 sync . s3://md06swe40006 --delete --acl public-read
                     '''
                     }
                 echo 'Production deployment completed!'
