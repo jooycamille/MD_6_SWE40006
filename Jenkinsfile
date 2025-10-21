@@ -1,12 +1,12 @@
 pipeline {
     agent any
 
-    triggers {
-        // GitHub webhook trigger
-        githubPush()
-        // polling trigger as backup
-        pollSCM('H/5 * * * *') // check every 5 minutes
-    }
+    // triggers {
+    //     // GitHub webhook trigger
+    //     githubPush()
+    //     // polling trigger as backup
+    //     pollSCM('H/5 * * * *') // check every 5 minutes
+    // }
     
     environment {
         NODE_VERSION = '20'
@@ -56,11 +56,10 @@ pipeline {
         // BUILD SERVER SECTION
         // ====================================
         stage('Install Dependencies') {
-            steps {
-                echo 'Installing frontend dependencies with npm install...'
-                dir('frontend') {
-                script {
+            steps {                               
+                script {                    
                     def startTime = System.currentTimeMillis()
+                    echo 'Installing project dependencies...' 
 
                     // Log system resource
                     sh '''
@@ -77,19 +76,19 @@ pipeline {
                         echo "============================" >> ${PERFORMANCE_LOG}
                     '''
                     
-                    // existing dependency installation steps
-                    echo 'Installing frontend dependencies...'
                     dir('frontend') {
                         sh '''
                             export NVM_DIR="$HOME/.nvm"
                             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
                             npm install
+
+                            echo "Dependencies installed successfully."
                         '''
                     }
 
                     def endTime = System.currentTimeMillis()
                     def duration = (endTime - startTime) / 1000
-                    sh "echo 'Dependency installation took ${duration} seconds' >> ${PERFORMANCE_LOG}"
+                    sh "echo 'Dependency installation took ${duration}s"
                 }
             }
         }
