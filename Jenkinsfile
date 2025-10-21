@@ -3,7 +3,6 @@ pipeline {
     
     environment {
         NODE_VERSION = '20'
-        BUILD_START_TIME = "${System.currentTimeMillis()}"
         PERFORMANCE_LOG = 'build-performance.log'
         MONITORING_ENABLED = 'true'
     }
@@ -12,7 +11,8 @@ pipeline {
         // ====================================
         // SHARED SETUP STAGE
         // ====================================
-        stage('Setup Node.js') {
+        
+        stage('Setup Environment') {
             steps {
                 script {
                     sh '''
@@ -42,6 +42,7 @@ pipeline {
             steps {
                 echo 'Checking out code from GitHub...'
                 sh 'pwd && ls -la'
+                echo 'Git checkout completed!'
             }
         }
         // ====================================
@@ -52,31 +53,31 @@ pipeline {
                 script {
                     def startTime = System.currentTimeMillis()
 
+                    echo 'Installing project dependencies...'
                     // Log system resource
                     sh '''
-                        echo "=== BUILD SERVER METRICS ===" > ${PERFORMANCE_LOG}
-                        echo "Build Number: ${BUILD_NUMBER}" >> ${PERFORMANCE_LOG}
-                        echo "Build Start: $(date)" >> ${PERFORMANCE_LOG}
-                        echo "Node Version: $(node --version)" >> ${PERFORMANCE_LOG}
-                        echo "Available Memory: $(free -h | grep Mem)" >> ${PERFORMANCE_LOG}
-                        echo "CPU Cores: $(nproc)" >> ${PERFORMANCE_LOG}
-                        echo "Disk Space: $(df -h . | tail -1)" >> ${PERFORMANCE_LOG}
-                        echo "============================" >> ${PERFORMANCE_LOG}
+                        echo "Build #${BUILD_NUMBER} - $(date)" > ${PERFORMANCE_LOG}
+                        echo "Memory: $(free -h | grep Mem | awk '{print $2}')" >> ${PERFORMANCE_LOG}
+                        echo "CPU: $(nproc) cores" >> ${PERFORMANCE_LOG}
                     '''
                     
-                    // existing dependency installation steps
-                    echo 'Installing frontend dependencies...'
                     dir('frontend') {
                         sh '''
                             export NVM_DIR="$HOME/.nvm"
                             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                            npm install
+                            
+                            # use npm ci for faster, reliable installs
+                            if [ -f package-lock.json ]; then
+                                npm ci --silent
+                            else
+                                npm install --silet
+                            fi
                         '''
                     }
 
                     def endTime = System.currentTimeMillis()
                     def duration = (endTime - startTime) / 1000
-                    sh "echo 'Dependency installation took ${duration} seconds' >> ${PERFORMANCE_LOG}"
+                    sh "echo 'Dependency installation took ${duration}s"
                 }
             }
         }
@@ -86,29 +87,29 @@ pipeline {
                 script {
                     def startTime = System.currentTimeMillis()
 
+                    echo 'Building React application for production...'
+
                     // Start resource monitoring
                     sh '''
                         (while true; do
-                            echo "$(date): CPU: $(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1)%, MEM: $(free | grep Mem | awk '{printf("%.1f%%", $3/$2 * 100.0)}')" >> build-resources.log
-                            sleep 3
-                        done ) &
-                        MONITOR_PID=$!
-                        echo $MONITOR_PID > monitor.pid
+                            echo "$(date +%H:%M:%S): $(free | grep Mem | awk '{printf("MEM=%.0f%%", $3/$2*100)}')" >> build-resources.log
+                            sleep 5
+                        done) &
+                        echo $! > monitor.pid
                     '''
 
-                    // existing build steps
-                    echo 'Building React application for production...'
+                    // existing build steps                    
                     dir('frontend') {
                         sh '''
                             export NVM_DIR="$HOME/.nvm"
                             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                            npm run build
+                            npm run build --silent
                         '''
                     }
 
                     // Stop resource monitoring
                     sh '''
-                        kill $(cat monitor.pid) 2>/dev/null || true
+                        kill $(cat monitor.pid) 2>/dev/null || true; rm -f monitor.pid'
                     '''
 
                     def endTime = System.currentTimeMillis()
@@ -117,14 +118,22 @@ pipeline {
                     // Collect build metrics
                     sh '''
                         BUILD_SIZE=$(du -sh frontend/build | cut -f1)
-                        echo "Build Size: ${BUILD_SIZE}" >> ${PERFORMANCE_LOG}                        
+                        FILE_COUNT=$(find frontend/build -type f | wc -l)
+                        
+                        echo "Build: ${duration}s" >> ${PERFORMANCE_LOG}
+                        echo "Size: $BUILD_SIZE ($FILE_COUNT files)" >> ${PERFORMANCE_LOG}
+                        
+                        # Peak memory usage
+                        if [ -f build-resources.log ]; then
+                            PEAK_MEM=$(sort build-resources.log | tail -1 | cut -d'=' -f2)
+                            echo "Peak: $PEAK_MEM" >> ${PERFORMANCE_LOG}
+                        fi                
                     '''
-                    sh "echo 'Build process took ${duration} seconds' >> ${PERFORMANCE_LOG}"
+                    sh "echo 'Build process took ${duration}s"
                 }                
             }
             post {
                 success {
-                    echo 'Build artifacts created successfully!'
                     stash includes: 'frontend/build/**/*', name: 'frontend-artifacts'
                     archiveArtifacts artifacts: 'frontend/build/**/*', fingerprint: true
                 }
@@ -135,17 +144,15 @@ pipeline {
             steps {
                 script {
                     sh '''
-                        # Generate build metrics JSON
+                        # Generate performance metrics
                         cat > build-metrics.json <<EOF
                         {
-                            "build_number": "${BUILD_NUMBER}",
-                            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)",
-                            "server": "build",
-                            "metrics": {
-                                "duration": "$(grep 'Build Duration' $PERFORMANCE_LOG | cut -d':' -f2 | tr -d ' s')",
-                                "dependencyInstall": $(grep 'Dependency Installation' $PERFORMANCE_LOG | cut -d':' -f2 | tr -d ' s'),
-                                "buildSize": "$(grep 'Build Size' $PERFORMANCE_LOG | cut -d':' -f2 | tr -d ' ')"
-                            }
+                            "build": ${BUILD_NUMBER},
+                            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+                            "buildTime": "$(grep 'Build:' ${PERFORMANCE_LOG} | cut -d':' -f2 | tr -d ' s')",
+                            "size": "$(grep 'Size:' ${PERFORMANCE_LOG} | cut -d':' -f2 | cut -d'(' -f1 | tr -d ' ')",
+                            "peak": "$(grep 'Peak:' ${PERFORMANCE_LOG} | cut -d':' -f2 | tr -d ' ')",
+                            "status": "success"
                         }
                         EOF
                     '''
@@ -159,6 +166,8 @@ pipeline {
         // ====================================
         // TEST SERVER SECTION
         // ====================================
+
+        // Level 1
         stage('Lint & Format Check') {
             steps {
                 echo 'Running code quality checks...'
@@ -171,14 +180,39 @@ pipeline {
         
         stage('Run Tests') {
             steps {
+                def testStart = System.currentTimeMillis()
+
                 echo 'Running frontend tests...'
                 dir('frontend') {
                     sh '''
                         export NVM_DIR="$HOME/.nvm"
                         [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                        CI=true npm test -- --coverage --watchAll=false
+                        CI=true npm test -- \
+                            --coverage \
+                            --watchAll=false \
+                            --silent \
+                            --testTimeout=10000 \
+                            --maxWorkers=2 \
+                            --coverageReporters=json-summary,lcov
                     '''
                 }
+
+                def testDuration = (System.currentTimeMillis() - testStart) / 1000
+
+                sh '''
+                    echo " === Test Metrics === " >> test-performance.log
+                    echo "Test Duration: ${testDuration}s" >> test-performance.log
+
+                    if [ -f frontend/coverage/coverage-summary.json" ]; then
+                        COVERAGE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('frontend/coverage/coverage-summary.json')).total.lines.pct)" 2>/dev/null || echo "0")
+                            echo "Coverage: ${COVERAGE}%" >> test-performance.log
+                        fi
+
+                        TEST_FILES=$(find frontend/src -name '*.test.js' | wc -l)
+                        echo "Tests: ${TEST_FILES}" >> test-performance.log)
+                '''
+
+                echo "Tests completed in ${testDuration}s"
             }
             post {
                 always {
@@ -191,6 +225,27 @@ pipeline {
                         reportFiles: 'index.html',
                         reportName: 'Coverage Report'
                     ])
+                    archiveArtifacts artifacts: 'test-performance.log', fingerprint: true, allowEmptyArchive: true
+                }
+            }
+        }
+
+        stage('Test Analysis') {
+            steps {
+                echo 'Analysing test metrics'
+                script {
+                    sh '''
+                        cat > test-metrics.json <<EOF
+                        {
+                            "build": ${BUILD_NUMBER},
+                            "testTime": "$(grep 'Duration:' test-performance.log | cut -d':' -f2 | tr -d ' s')",
+                            "coverage": "$(grep 'Coverage:' test-performance.log | cut -d':' -f2 | tr -d ' %')",
+                            "files": "$(grep 'Tests:' test-performance.log | cut -d':' -f2 | tr -d ' files')",
+                            "status": "passed"
+                        }
+                        EOF
+                    '''
+                    archiveArtifacts artifacts: 'test-metrics.json', fingerprint: true
                 }
             }
         }
