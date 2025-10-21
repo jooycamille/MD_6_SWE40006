@@ -162,7 +162,7 @@ pipeline {
                     // 2. Deployment Command (Example: AWS S3)
                     dir('frontend/build') {
                     sh '''
-                    export PATH="/opt/homebrew/bin:$PATH"  // FIX: Makes 'aws' command available
+                    export PATH="/opt/homebrew/bin:$PATH"  
                     aws s3 sync . s3://md06swe40006 --delete --acl public-read
                     '''
                     }
