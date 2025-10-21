@@ -112,16 +112,7 @@ pipeline {
 
                     echo 'Building React application for production...'
 
-                    // Start resource monitoring
-                    sh '''
-                        (while true; do
-                            echo "$(date +%H:%M:%S): $(free | grep Mem | awk '{printf("MEM=%.0f%%", $3/$2*100)}')" >> build-resources.log
-                            sleep 5
-                        done) &
-                        echo $! > monitor.pid
-                    '''
-
-                    // existing build steps                    
+                    // Build the application in frontend directory                  
                     dir('frontend') {
                         sh '''
                             export NVM_DIR="$HOME/.nvm"
@@ -130,29 +121,22 @@ pipeline {
                         '''
                     }
 
-                    // Stop resource monitoring
-                    sh '''
-                        kill $(cat monitor.pid) 2>/dev/null || true; rm -f monitor.pid'
-                    '''
-
                     def endTime = System.currentTimeMillis()
                     def duration = (endTime - startTime) / 1000
 
-                    // Collect build metrics
-                    sh '''
-                        BUILD_SIZE=$(du -sh frontend/build | cut -f1)
-                        FILE_COUNT=$(find frontend/build -type f | wc -l)
+                    // Log build completion
+                    sh """
+                        echo "Build: ${duration}s" >> \${PERFORMANCE_LOG}
                         
-                        echo "Build: ${duration}s" >> ${PERFORMANCE_LOG}
-                        echo "Size: $BUILD_SIZE ($FILE_COUNT files)" >> ${PERFORMANCE_LOG}
-                        
-                        # Peak memory usage
-                        if [ -f build-resources.log ]; then
-                            PEAK_MEM=$(sort build-resources.log | tail -1 | cut -d'=' -f2)
-                            echo "Peak: $PEAK_MEM" >> ${PERFORMANCE_LOG}
-                        fi                
-                    '''
-                    sh "echo 'Build process took ${duration}s"
+                        # Check if build directory exists and get basic info
+                        if [ -d frontend/build ]; then
+                            echo "Build completed successfully" >> \${PERFORMANCE_LOG}
+                        else
+                            echo "Build directory not found" >> \${PERFORMANCE_LOG}
+                        fi
+                    """
+                    
+                    echo "Build process took ${duration}s"
                 }                
             }
             post {
