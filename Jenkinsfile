@@ -55,46 +55,54 @@ pipeline {
         // ====================================
         // BUILD SERVER SECTION
         // ====================================
-        stage('Install Dependencies') {
-    steps {
-        script {
-            def startTime = System.currentTimeMillis()
-            
-            echo 'Installing dependencies...'
-            
-            // Mac-compatible system metrics capture
-            sh '''
-                echo "Build #${BUILD_NUMBER} - $(date)" > ${PERFORMANCE_LOG}
-                
-                echo "Memory: $TOTAL_MEM" >> ${PERFORMANCE_LOG}
-                echo "CPU: $CPU_CORES cores" >> ${PERFORMANCE_LOG}
-                echo "Disk Available: $DISK_SPACE" >> ${PERFORMANCE_LOG}
-            '''
-            
-            dir('frontend') {
-                sh '''
-                    export NVM_DIR="$HOME/.nvm"
-                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+        stage('📦 Install Dependencies') {
+            steps {
+                script {
+                    def startTime = System.currentTimeMillis()
                     
-                    # Use npm ci for faster, reliable installs
-                    if [ -f package-lock.json ]; then
-                        echo "Using npm ci for clean install..."
-                        npm ci --silent
-                    else
-                        echo "Using npm install..."
-                        npm install --silent
-                    fi
+                    echo 'Installing dependencies (optimized)...'
                     
-                    echo "Dependencies installed successfully"
-                '''
+                    sh '''
+                        echo "Build #${BUILD_NUMBER} - $(date)" > build-performance.log
+                        
+                        TOTAL_MEM=$(system_profiler SPHardwareDataType 2>/dev/null | grep "Memory:" | awk '{print $2, $3}' || echo "Unknown")
+                        CPU_CORES=$(sysctl -n hw.ncpu 2>/dev/null || echo "Unknown") 
+                        DISK_SPACE=$(df -h . 2>/dev/null | tail -1 | awk '{print $4}' || echo "Unknown")
+                        
+                        echo "Memory: $TOTAL_MEM" >> build-performance.log
+                        echo "CPU: $CPU_CORES cores" >> build-performance.log
+                        echo "Disk Available: $DISK_SPACE" >> build-performance.log
+                    '''
+                    
+                    dir('frontend') {
+                        sh '''
+                            export NVM_DIR="$HOME/.nvm"
+                            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                            
+                            # Use npm ci for faster, reliable installs
+                            if [ -f package-lock.json ]; then
+                                echo "Using npm ci for clean install..."
+                                npm ci --silent
+                            else
+                                echo "Using npm install..."
+                                npm install --silent
+                            fi
+                            
+                            echo "Dependencies installed successfully"
+                        '''
+                    }
+                    
+                    def duration = (System.currentTimeMillis() - startTime) / 1000
+                    
+                    // Fixed final command with proper variable handling
+                    sh """
+                        echo 'Dependencies Duration: ${duration}s' >> build-performance.log
+                    """
+                    
+                    echo "Dependencies installed in ${duration}s"
+                }
             }
-            
-            def duration = (System.currentTimeMillis() - startTime) / 1000
-            sh "echo 'Dependencies Duration: ${duration}s' >> \${PERFORMANCE_LOG}"
-            echo "Dependencies installed in ${duration}s"
         }
-    }
-}
         
         stage('Build Application') {
             steps {
