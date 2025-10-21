@@ -1,12 +1,12 @@
 pipeline {
     agent any
 
-    // triggers {
-    //     // GitHub webhook trigger
-    //     githubPush()
-    //     // polling trigger as backup
-    //     pollSCM('H/5 * * * *') // check every 5 minutes
-    // }
+    triggers {
+        // GitHub webhook trigger
+        githubPush()
+        // polling trigger as backup
+        pollSCM('H/5 * * * *') // check every 5 minutes
+    }
     
     environment {
         NODE_VERSION = '20'
@@ -80,9 +80,27 @@ pipeline {
                         sh '''
                             export NVM_DIR="$HOME/.nvm"
                             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                            npm install
+                            
+                            # Check if package.json exists
+                            if [ ! -f package.json ]; then
+                                echo "package.json not found in frontend/. Cannot install dependencies."
+                                ls -la
+                                exit 1
+                            fi
+
+                            echo "Found package.json, installing dependencies..."
+
+                            # Use npm ci for faster, reliable installs
+                            if [ -f package-lock.json ]; then
+                                echo "Using npm ci for clean install..."
+                                npm ci --silent
+                            else
+                                echo "Using npm install..."
+                                npm install --silent
+                            fi
 
                             echo "Dependencies installed successfully."
+                               
                         '''
                     }
 
