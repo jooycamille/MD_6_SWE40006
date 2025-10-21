@@ -1,5 +1,12 @@
 pipeline {
     agent any
+
+    triggers {
+        // GitHub webhook trigger
+        githubPush()
+        // polling trigger as backup
+        pollSCM('H/5 * * * *') // check every 5 minutes
+    }
     
     environment {
         NODE_VERSION = '20'
@@ -180,7 +187,8 @@ pipeline {
         
         stage('Run Tests') {
             steps {
-                def testStart = System.currentTimeMillis()
+                script {
+                                    def testStart = System.currentTimeMillis()
 
                 echo 'Running frontend tests...'
                 dir('frontend') {
@@ -213,6 +221,7 @@ pipeline {
                 '''
 
                 echo "Tests completed in ${testDuration}s"
+                }
             }
             post {
                 always {
