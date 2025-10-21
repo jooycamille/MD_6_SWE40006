@@ -56,45 +56,45 @@ pipeline {
         // BUILD SERVER SECTION
         // ====================================
         stage('Install Dependencies') {
-            steps {
-                script {
-                    def startTime = System.currentTimeMillis()
-
-                    echo 'Installing project dependencies...'
-                    // Log system resource
-                    sh '''
-                        echo "Build #${BUILD_NUMBER} - $(date)" > ${PERFORMANCE_LOG}
+    steps {
+        script {
+            def startTime = System.currentTimeMillis()
+            
+            echo 'Installing dependencies...'
+            
+            // Mac-compatible system metrics capture
+            sh '''
+                echo "Build #${BUILD_NUMBER} - $(date)" > ${PERFORMANCE_LOG}
                 
-                        # Use system_profiler for Mac instead of free/nproc
-                        TOTAL_MEM=$(system_profiler SPHardwareDataType | grep "Memory:" | awk '{print $2, $3}')
-                        CPU_CORES=$(sysctl -n hw.ncpu)
-                        DISK_SPACE=$(df -h . | tail -1 | awk '{print $4}')
-                        
-                        echo "Memory: $TOTAL_MEM" >> ${PERFORMANCE_LOG}
-                        echo "CPU: $CPU_CORES cores" >> ${PERFORMANCE_LOG}
-                        echo "Disk Available: $DISK_SPACE" >> ${PERFORMANCE_LOG}
-                    '''
+                echo "Memory: $TOTAL_MEM" >> ${PERFORMANCE_LOG}
+                echo "CPU: $CPU_CORES cores" >> ${PERFORMANCE_LOG}
+                echo "Disk Available: $DISK_SPACE" >> ${PERFORMANCE_LOG}
+            '''
+            
+            dir('frontend') {
+                sh '''
+                    export NVM_DIR="$HOME/.nvm"
+                    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
                     
-                    dir('frontend') {
-                        sh '''
-                            export NVM_DIR="$HOME/.nvm"
-                            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                            
-                            # use npm ci for faster, reliable installs
-                            if [ -f package-lock.json ]; then
-                                npm ci --silent
-                            else
-                                npm install --silent
-                            fi
-                        '''
-                    }
-
-                    def endTime = System.currentTimeMillis()
-                    def duration = (endTime - startTime) / 1000
-                    sh "echo 'Dependency installation took ${duration}s"
-                }
+                    # Use npm ci for faster, reliable installs
+                    if [ -f package-lock.json ]; then
+                        echo "Using npm ci for clean install..."
+                        npm ci --silent
+                    else
+                        echo "Using npm install..."
+                        npm install --silent
+                    fi
+                    
+                    echo "Dependencies installed successfully"
+                '''
             }
+            
+            def duration = (System.currentTimeMillis() - startTime) / 1000
+            sh "echo 'Dependencies Duration: ${duration}s' >> \${PERFORMANCE_LOG}"
+            echo "Dependencies installed in ${duration}s"
         }
+    }
+}
         
         stage('Build Application') {
             steps {
