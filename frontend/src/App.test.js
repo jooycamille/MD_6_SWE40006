@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 
@@ -33,48 +33,45 @@ test('renders todo counter', () => {
 });
 
 test('adds a new todo item', async () => {
-  const user = userEvent.setup();
   render(<App />);
   
   const input = screen.getByPlaceholderText(/Enter a new task/i);
   const addButton = screen.getByText('Add');
   
-  await user.type(input, 'Test todo item');
-  await user.click(addButton);
+  await userEvent.type(input, 'Test todo item');
+  await userEvent.click(addButton);
   
   expect(screen.getByText('Test todo item')).toBeInTheDocument();
   expect(screen.queryByText(/No tasks available/i)).not.toBeInTheDocument();
 });
 
 test('deletes a todo item', async () => {
-  const user = userEvent.setup();
   render(<App />);
   
   // Add a todo first
   const input = screen.getByPlaceholderText(/Enter a new task/i);
-  await user.type(input, 'Todo to delete');
-  await user.click(screen.getByText('Add'));
+  await userEvent.type(input, 'Todo to delete');
+  await userEvent.click(screen.getByText('Add'));
   
   // Delete the todo
   const deleteButton = screen.getByText('Delete');
-  await user.click(deleteButton);
+  await userEvent.click(deleteButton);
   
   expect(screen.queryByText('Todo to delete')).not.toBeInTheDocument();
   expect(screen.getByText(/No tasks available/i)).toBeInTheDocument();
 });
 
 test('toggles todo completion status', async () => {
-  const user = userEvent.setup();
   render(<App />);
   
   // Add a todo
   const input = screen.getByPlaceholderText(/Enter a new task/i);
-  await user.type(input, 'Todo to complete');
-  await user.click(screen.getByText('Add'));
+  await userEvent.type(input, 'Todo to complete');
+  await userEvent.click(screen.getByText('Add'));
   
   // Toggle completion
   const checkbox = screen.getByRole('checkbox');
-  await user.click(checkbox);
+  await userEvent.click(checkbox);
   
   expect(checkbox).toBeChecked();
   expect(screen.getByText(/Completed: 1/)).toBeInTheDocument();
@@ -82,109 +79,103 @@ test('toggles todo completion status', async () => {
 });
 
 test('edits todo text and date', async () => {
-  const user = userEvent.setup();
   render(<App />);
   
   // Add a todo
   const input = screen.getByPlaceholderText(/Enter a new task/i);
-  await user.type(input, 'Original todo');
-  await user.click(screen.getByText('Add'));
+  await userEvent.type(input, 'Original todo');
+  await userEvent.click(screen.getByText('Add'));
   
   // Edit the todo
   const editButton = screen.getByText('Edit');
-  await user.click(editButton);
+  await userEvent.click(editButton);
   
   const editInput = screen.getByDisplayValue('Original todo');
-  await user.clear(editInput);
-  await user.type(editInput, 'Edited todo');
+  await userEvent.clear(editInput);
+  await userEvent.type(editInput, 'Edited todo');
   
   const saveButton = screen.getByText('Save');
-  await user.click(saveButton);
+  await userEvent.click(saveButton);
   
   expect(screen.getByText('Edited todo')).toBeInTheDocument();
   expect(screen.queryByText('Original todo')).not.toBeInTheDocument();
 });
 
 test('cancels todo editing', async () => {
-  const user = userEvent.setup();
   render(<App />);
   
   // Add a todo
   const input = screen.getByPlaceholderText(/Enter a new task/i);
-  await user.type(input, 'Original todo');
-  await user.click(screen.getByText('Add'));
+  await userEvent.type(input, 'Original todo');
+  await userEvent.click(screen.getByText('Add'));
   
   // Start editing
   const editButton = screen.getByText('Edit');
-  await user.click(editButton);
+  await userEvent.click(editButton);
   
   const editInput = screen.getByDisplayValue('Original todo');
-  await user.clear(editInput);
-  await user.type(editInput, 'This should be cancelled');
+  await userEvent.clear(editInput);
+  await userEvent.type(editInput, 'This should be cancelled');
   
   // Cancel editing
   const cancelButton = screen.getByText('Cancel');
-  await user.click(cancelButton);
+  await userEvent.click(cancelButton);
   
   expect(screen.getByText('Original todo')).toBeInTheDocument();
   expect(screen.queryByText('This should be cancelled')).not.toBeInTheDocument();
 });
 
 test('prevents adding empty todos', async () => {
-  const user = userEvent.setup();
   render(<App />);
   
   const addButton = screen.getByText('Add');
-  await user.click(addButton);
+  await userEvent.click(addButton);
   
   expect(screen.getByText(/No tasks available/i)).toBeInTheDocument();
 });
 
 test('handles form submission with enter key', async () => {
-  const user = userEvent.setup();
   render(<App />);
   
   const input = screen.getByPlaceholderText(/Enter a new task/i);
-  await user.type(input, 'Todo via enter key{enter}');
+  await userEvent.type(input, 'Todo via enter key{enter}');
   
   expect(screen.getByText('Todo via enter key')).toBeInTheDocument();
 });
 
 test('updates todo counters correctly', async () => {
-  const user = userEvent.setup();
   render(<App />);
   
   // Add multiple todos
   const input = screen.getByPlaceholderText(/Enter a new task/i);
   
-  await user.type(input, 'Todo 1');
-  await user.click(screen.getByText('Add'));
+  await userEvent.type(input, 'Todo 1');
+  await userEvent.click(screen.getByText('Add'));
   
-  await user.type(input, 'Todo 2');
-  await user.click(screen.getByText('Add'));
+  await userEvent.type(input, 'Todo 2');
+  await userEvent.click(screen.getByText('Add'));
   
-  await user.type(input, 'Todo 3');
-  await user.click(screen.getByText('Add'));
+  await userEvent.type(input, 'Todo 3');
+  await userEvent.click(screen.getByText('Add'));
   
   expect(screen.getByText(/Outstanding Tasks: 3/)).toBeInTheDocument();
   expect(screen.getByText(/Completed: 0/)).toBeInTheDocument();
   
   // Complete one todo
   const checkboxes = screen.getAllByRole('checkbox');
-  await user.click(checkboxes[0]);
+  await userEvent.click(checkboxes[0]);
   
   expect(screen.getByText(/Outstanding Tasks: 2/)).toBeInTheDocument();
   expect(screen.getByText(/Completed: 1/)).toBeInTheDocument();
 });
 
 test('persists todos in localStorage', async () => {
-  const user = userEvent.setup();
   render(<App />);
   
   // Add a todo
   const input = screen.getByPlaceholderText(/Enter a new task/i);
-  await user.type(input, 'Persistent todo');
-  await user.click(screen.getByText('Add'));
+  await userEvent.type(input, 'Persistent todo');
+  await userEvent.click(screen.getByText('Add'));
   
   // Check localStorage
   const savedTodos = JSON.parse(localStorage.getItem('todos') || '[]');
