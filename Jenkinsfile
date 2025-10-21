@@ -280,4 +280,4 @@ pipeline {
             echo 'Check the logs above for details.'
         }
     }
-}
+}}
