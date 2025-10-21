@@ -201,7 +201,8 @@ pipeline {
                             --silent \
                             --testTimeout=10000 \
                             --maxWorkers=2 \
-                            --coverageReporters=json-summary,lcov
+                            --coverageReporters=json-summary \
+                            --coverageReporters=lcov
                     '''
                 }
 
@@ -209,15 +210,15 @@ pipeline {
 
                 sh '''
                     echo " === Test Metrics === " >> test-performance.log
-                    echo "Test Duration: ${testDuration}s" >> test-performance.log
+                    echo "Test Duration: ${TEST_DURATION}s" >> test-performance.log
 
-                    if [ -f frontend/coverage/coverage-summary.json" ]; then
+                    if [ -f "frontend/coverage/coverage-summary.json" ]; then
                         COVERAGE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('frontend/coverage/coverage-summary.json')).total.lines.pct)" 2>/dev/null || echo "0")
-                            echo "Coverage: ${COVERAGE}%" >> test-performance.log
-                        fi
+                        echo "Coverage: ${COVERAGE}%" >> test-performance.log
+                    fi
 
-                        TEST_FILES=$(find frontend/src -name '*.test.js' | wc -l)
-                        echo "Tests: ${TEST_FILES}" >> test-performance.log)
+                    TEST_FILES=$(find frontend/src -name '*.test.js' | wc -l)
+                    echo "Tests: ${TEST_FILES} files" >> test-performance.log
                 '''
 
                 echo "Tests completed in ${testDuration}s"
