@@ -117,11 +117,17 @@ pipeline {
                     // Collect build metrics
                     sh '''
                         BUILD_SIZE=$(du -sh frontend/build | cut -f1)
-                        echo "Build Size: ${BUILD_SIZE}" >> ${PERFORMANCE_LOG}
-                        echo 'Build process took ${duration} seconds' >> ${PERFORMANCE_LOG}
+                        echo "Build Size: ${BUILD_SIZE}" >> ${PERFORMANCE_LOG}                        
                     '''
+                    sh "echo 'Build process took ${duration} seconds' >> ${PERFORMANCE_LOG}"
+                }                
+            }
+            post {
+                success {
+                    echo 'Build artifacts created successfully!'
+                    stash includes: 'frontend/build/**/*', name: 'frontend-artifacts'
+                    archiveArtifacts artifacts: 'frontend/build/**/*', fingerprint: true
                 }
-                
             }
         }
 
@@ -146,23 +152,10 @@ pipeline {
 
                     // Archive performance logs and metrics
                     archiveArtifacts artifacts: 'build-metrics.json, build-performance.log', fingerprint: true
-                echo 'Building React application for production...'
-                dir('frontend') {
-                    sh '''
-                        export NVM_DIR="$HOME/.nvm"
-                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                        npm run build
-                    '''
-                }
-            }
-            post {
-                success {
-                    echo 'Build artifacts created successfully!'
-                    stash includes: 'frontend/build/**/*', name: 'frontend-artifacts'
-                    archiveArtifacts artifacts: 'frontend/build/**/*', fingerprint: true
                 }
             }
         }
+
         // ====================================
         // TEST SERVER SECTION
         // ====================================
@@ -280,4 +273,4 @@ pipeline {
             echo 'Check the logs above for details.'
         }
     }
-}}
+}
