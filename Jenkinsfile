@@ -163,7 +163,7 @@ pipeline {
                     dir('frontend/build') {
                     sh '''
                     export PATH="/opt/homebrew/bin:$PATH"  
-                    aws s3 sync . s3://md06swe40006 --delete --acl public-read
+                    aws s3 sync . s3://md06swe40006 --delete
                     '''
                     }
                 echo 'Production deployment completed!'
