@@ -3,9 +3,9 @@ pipeline {
 
     triggers {
         // GitHub webhook trigger
-        githubPush()
+        // githubPush()
         // polling trigger as backup
-        pollSCM('H/5 * * * *') // check every 5 minutes
+        pollSCM('* * * * *') // check every 5 minutes
     }
     
     environment {
