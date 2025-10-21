@@ -61,21 +61,15 @@ pipeline {
                     def startTime = System.currentTimeMillis()
                     echo 'Installing project dependencies...' 
 
-                    // Log system resource
+                    // Simple build metrics without system info
                     sh '''
-                        export NVM_DIR="$HOME/.nvm"
-                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                        npm install
                         echo "=== BUILD SERVER METRICS ===" > ${PERFORMANCE_LOG}
                         echo "Build Number: ${BUILD_NUMBER}" >> ${PERFORMANCE_LOG}
                         echo "Build Start: $(date)" >> ${PERFORMANCE_LOG}
-                        echo "Node Version: $(node --version)" >> ${PERFORMANCE_LOG}
-                        echo "Available Memory: $(free -h | grep Mem)" >> ${PERFORMANCE_LOG}
-                        echo "CPU Cores: $(nproc)" >> ${PERFORMANCE_LOG}
-                        echo "Disk Space: $(df -h . | tail -1)" >> ${PERFORMANCE_LOG}
                         echo "============================" >> ${PERFORMANCE_LOG}
                     '''
                     
+                    // Install dependencies ONLY in frontend directory
                     dir('frontend') {
                         sh '''
                             export NVM_DIR="$HOME/.nvm"
@@ -100,13 +94,13 @@ pipeline {
                             fi
 
                             echo "Dependencies installed successfully."
-                               
                         '''
                     }
 
                     def endTime = System.currentTimeMillis()
                     def duration = (endTime - startTime) / 1000
-                    sh "echo 'Dependency installation took ${duration}s"
+                    sh "echo 'Dependency installation took ${duration}s' >> \${PERFORMANCE_LOG}"
+                    echo "Dependencies installed in ${duration}s"
                 }
             }
         }
