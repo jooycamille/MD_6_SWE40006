@@ -162,18 +162,10 @@ pipeline {
                     // 2. Deployment Command (Example: AWS S3)
                     dir('frontend/build') {
                     sh '''
-                    # 1. Create a temporary symbolic link (or alias) in the current directory.
-                    # This tells the Unix shell to run the Windows executable.
-                    # We also need to make sure the executable is run *without* quotes
-                    # but the path is accessible. We'll use the 'ln -s' trick.
-                    
-                    ln -s "C:/Program Files/Amazon/AWSCLI/bin/aws.exe" aws_runner
-
-                    # 2. Execute the deployment using the local, linked executable
-                    # Note: We execute it using './' to ensure the current directory's
-                    # link is prioritized, and the arguments are passed correctly.
-                    ./aws_runner s3 sync . s3://md06swe40006 --delete --acl public-read
-                '''
+                    # FINAL SOLUTION: Use the Unix 'sh' command to call the Windows Command Prompt (cmd)
+                    # to execute the deployment command natively.
+                    cmd /c "\"C:\\Program Files\\Amazon\\AWSCLI\\bin\\aws.exe\" s3 sync . s3://md06swe40006 --delete --acl public-read"
+                    '''
                     }
                 echo 'Production deployment completed!'
             }
