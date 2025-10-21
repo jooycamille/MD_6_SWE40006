@@ -163,7 +163,7 @@ pipeline {
                     dir('frontend/build') {
                         sh '''
                     # FINAL ATTEMPT: Use the verified path with DOUBLE quotes and explicitly call the .EXE
-                        "C:/Program Files/Amazon/AWSCLI/bin/aws.exe" s3 sync . s3://md06swe40006 --delete --acl public-read
+                        ""C:\Program Files\Amazon\AWSCLI\bin\aws.exe"" s3 sync . s3://md06swe40006 --delete --acl public-read
                     '''
                     }
                 }
