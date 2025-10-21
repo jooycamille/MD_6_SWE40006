@@ -55,51 +55,41 @@ pipeline {
         // ====================================
         // BUILD SERVER SECTION
         // ====================================
-        stage('📦 Install Dependencies') {
+        stage('Install Dependencies') {
             steps {
+                echo 'Installing frontend dependencies with npm install...'
+                dir('frontend') {
                 script {
                     def startTime = System.currentTimeMillis()
-                    
-                    echo 'Installing dependencies (optimized)...'
-                    
+
+                    // Log system resource
                     sh '''
-                        echo "Build #${BUILD_NUMBER} - $(date)" > build-performance.log
-                        
-                        TOTAL_MEM=$(system_profiler SPHardwareDataType 2>/dev/null | grep "Memory:" | awk '{print $2, $3}' || echo "Unknown")
-                        CPU_CORES=$(sysctl -n hw.ncpu 2>/dev/null || echo "Unknown") 
-                        DISK_SPACE=$(df -h . 2>/dev/null | tail -1 | awk '{print $4}' || echo "Unknown")
-                        
-                        echo "Memory: $TOTAL_MEM" >> build-performance.log
-                        echo "CPU: $CPU_CORES cores" >> build-performance.log
-                        echo "Disk Available: $DISK_SPACE" >> build-performance.log
+                        export NVM_DIR="$HOME/.nvm"
+                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                        npm install
+                        echo "=== BUILD SERVER METRICS ===" > ${PERFORMANCE_LOG}
+                        echo "Build Number: ${BUILD_NUMBER}" >> ${PERFORMANCE_LOG}
+                        echo "Build Start: $(date)" >> ${PERFORMANCE_LOG}
+                        echo "Node Version: $(node --version)" >> ${PERFORMANCE_LOG}
+                        echo "Available Memory: $(free -h | grep Mem)" >> ${PERFORMANCE_LOG}
+                        echo "CPU Cores: $(nproc)" >> ${PERFORMANCE_LOG}
+                        echo "Disk Space: $(df -h . | tail -1)" >> ${PERFORMANCE_LOG}
+                        echo "============================" >> ${PERFORMANCE_LOG}
                     '''
                     
+                    // existing dependency installation steps
+                    echo 'Installing frontend dependencies...'
                     dir('frontend') {
                         sh '''
                             export NVM_DIR="$HOME/.nvm"
                             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                            
-                            # Use npm ci for faster, reliable installs
-                            if [ -f package-lock.json ]; then
-                                echo "Using npm ci for clean install..."
-                                npm ci --silent
-                            else
-                                echo "Using npm install..."
-                                npm install --silent
-                            fi
-                            
-                            echo "Dependencies installed successfully"
+                            npm install
                         '''
                     }
-                    
-                    def duration = (System.currentTimeMillis() - startTime) / 1000
-                    
-                    // Fixed final command with proper variable handling
-                    sh """
-                        echo 'Dependencies Duration: ${duration}s' >> build-performance.log
-                    """
-                    
-                    echo "Dependencies installed in ${duration}s"
+
+                    def endTime = System.currentTimeMillis()
+                    def duration = (endTime - startTime) / 1000
+                    sh "echo 'Dependency installation took ${duration} seconds' >> ${PERFORMANCE_LOG}"
                 }
             }
         }
