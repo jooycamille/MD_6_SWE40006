@@ -64,8 +64,15 @@ pipeline {
                     // Log system resource
                     sh '''
                         echo "Build #${BUILD_NUMBER} - $(date)" > ${PERFORMANCE_LOG}
-                        echo "Memory: $(free -h | grep Mem | awk '{print $2}')" >> ${PERFORMANCE_LOG}
-                        echo "CPU: $(nproc) cores" >> ${PERFORMANCE_LOG}
+                
+                        # Use system_profiler for Mac instead of free/nproc
+                        TOTAL_MEM=$(system_profiler SPHardwareDataType | grep "Memory:" | awk '{print $2, $3}')
+                        CPU_CORES=$(sysctl -n hw.ncpu)
+                        DISK_SPACE=$(df -h . | tail -1 | awk '{print $4}')
+                        
+                        echo "Memory: $TOTAL_MEM" >> ${PERFORMANCE_LOG}
+                        echo "CPU: $CPU_CORES cores" >> ${PERFORMANCE_LOG}
+                        echo "Disk Available: $DISK_SPACE" >> ${PERFORMANCE_LOG}
                     '''
                     
                     dir('frontend') {
@@ -77,7 +84,7 @@ pipeline {
                             if [ -f package-lock.json ]; then
                                 npm ci --silent
                             else
-                                npm install --silet
+                                npm install --silent
                             fi
                         '''
                     }
