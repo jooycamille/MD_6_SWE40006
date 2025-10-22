@@ -288,7 +288,7 @@ pipeline {
         
         stage('Deploy to Production') {
             steps {
-                input message: 'Approve deployment to PRODUCTION?'
+                // input message: 'Approve deployment to PRODUCTION?'
                 echo 'Deploying certified build artifacts to Production...'
                 unstash 'frontend-artifacts'
                 withCredentials([

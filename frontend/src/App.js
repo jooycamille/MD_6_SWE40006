@@ -212,7 +212,7 @@ function App() {
   return (
     <div className="App">
       <header className="app-header">
-        <h1>To-do List v2.0 - Auto Deploy Test</h1>
+        <h1>To-do List</h1>
       </header>
 
       <main className="app-main">
