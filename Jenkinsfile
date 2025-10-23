@@ -312,9 +312,10 @@ pipeline {
                     '''
                     }
                 echo 'Production deployment completed!'
+                }
             }
         }
-        }
+        
         stage('Production Smoke Test') {
             steps {
                 echo 'Verifying production deployment...'
