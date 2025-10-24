@@ -188,40 +188,40 @@ pipeline {
         stage('Run Tests') {
             steps {
                 script {
-                                    def testStart = System.currentTimeMillis()
+                    def testStart = System.currentTimeMillis()
 
-                echo 'Running frontend tests...'
-                dir('frontend') {
+                    echo 'Running frontend tests...'
+                    dir('frontend') {
+                        sh '''
+                            export NVM_DIR="$HOME/.nvm"
+                            [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+                            CI=true npm test -- \
+                                --coverage \
+                                --watchAll=false \
+                                --silent \
+                                --testTimeout=10000 \
+                                --maxWorkers=2 \
+                                --coverageReporters=json-summary \
+                                --coverageReporters=lcov
+                        '''
+                    }
+
+                    def testDuration = (System.currentTimeMillis() - testStart) / 1000
+
                     sh '''
-                        export NVM_DIR="$HOME/.nvm"
-                        [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-                        CI=true npm test -- \
-                            --coverage \
-                            --watchAll=false \
-                            --silent \
-                            --testTimeout=10000 \
-                            --maxWorkers=2 \
-                            --coverageReporters=json-summary \
-                            --coverageReporters=lcov
+                        echo " === Test Metrics === " >> test-performance.log
+                        echo "Test Duration: ${TEST_DURATION}s" >> test-performance.log
+
+                        if [ -f "frontend/coverage/coverage-summary.json" ]; then
+                            COVERAGE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('frontend/coverage/coverage-summary.json')).total.lines.pct)" 2>/dev/null || echo "0")
+                            echo "Coverage: ${COVERAGE}%" >> test-performance.log
+                        fi
+
+                        TEST_FILES=$(find frontend/src -name '*.test.js' | wc -l)
+                        echo "Tests: ${TEST_FILES} files" >> test-performance.log
                     '''
-                }
 
-                def testDuration = (System.currentTimeMillis() - testStart) / 1000
-
-                sh '''
-                    echo " === Test Metrics === " >> test-performance.log
-                    echo "Test Duration: ${TEST_DURATION}s" >> test-performance.log
-
-                    if [ -f "frontend/coverage/coverage-summary.json" ]; then
-                        COVERAGE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('frontend/coverage/coverage-summary.json')).total.lines.pct)" 2>/dev/null || echo "0")
-                        echo "Coverage: ${COVERAGE}%" >> test-performance.log
-                    fi
-
-                    TEST_FILES=$(find frontend/src -name '*.test.js' | wc -l)
-                    echo "Tests: ${TEST_FILES} files" >> test-performance.log
-                '''
-
-                echo "Tests completed in ${testDuration}s"
+                    echo "Tests completed in ${testDuration}s"
                 }
             }
             post {
@@ -315,7 +315,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Production Smoke Test') {
             steps {
                 echo 'Verifying production deployment...'

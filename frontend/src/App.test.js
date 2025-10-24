@@ -16,7 +16,7 @@ test('renders todo app header', () => {
 
 test('renders add todo input', () => {
   render(<App />);
-  const inputElement = screen.getByPlaceholderText(/Enter a new task/i);
+  const inputElement = screen.getByPlaceholdaerText(/Enter a new task/i);
   expect(inputElement).toBeInTheDocument();
 });
 
