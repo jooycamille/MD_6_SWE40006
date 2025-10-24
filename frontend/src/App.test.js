@@ -92,7 +92,7 @@ test('edits todo text and date', async () => {
   const editButton = screen.getByText('Edit');
   await userEvent.click(editButton);
 
-  const editInput = screen.getByDisplayValue('Original todo');
+  const editInput = screen.getByDisplayfValue('Original todo');
   await userEvent.clear(editInput);
   await userEvent.type(editInput, 'Edited todo');
 
