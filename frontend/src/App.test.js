@@ -207,7 +207,7 @@ test('loads todos from localStorage on mount', () => {
 describe('Guardrail Value Tests (using .each)', () => {
   test.each([
     ['Todo 1', 'Todo 1'],
-    ['Todo 2', 'Todo 2'],
+    ['Todo 2', 'Todo 3'],
     ['Special Task', 'Special Task']
   ])('renders %s correctly', async (input, expected) => {
     render(<App />);
