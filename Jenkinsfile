@@ -260,9 +260,9 @@ pipeline {
             }
         }
         
-        // ====================================
-        // PRODUCTION SERVER SECTION - TODO
-        // ====================================
+        // ===========================
+        // PRODUCTION SERVER SECTION
+        // ===========================
         stage('Deploy to Test Environment') {
             steps {
                 echo 'Deploying to test environment...'

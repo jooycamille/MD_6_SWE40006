@@ -203,3 +203,17 @@ test('loads todos from localStorage on mount', () => {
   expect(screen.getByText('Loaded todo')).toBeInTheDocument();
   expect(screen.queryByText(/No tasks available/i)).not.toBeInTheDocument();
 });
+
+describe('Critical Checks', () => {
+  test('counter displays correct value after adding a task', async () => {
+    render(<App />);
+    const input = screen.getByPlaceholderText(/Enter a new task/i);
+    const addButton = screen.getByText('Add');
+
+    await userEvent.type(input, 'Task A');
+    await userEvent.click(addButton);
+
+    const counter = screen.getByText(/Outstanding Tasks:/i);
+    expect(counter).toHaveTextContent(/^Outstanding Tasks: 1$/);
+  });
+});
