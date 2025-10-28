@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// Todo Item Component
+// =============================
+// TodoItem Component
+// -----------------------------
+// Handles rendering of individual todo items,
+// including editing, deleting, toggling completion,
+// and date conversion for editing.
+// =============================
 function TodoItem({ todo, onDelete, onToggleComplete, onEdit }) {
+  // State to handle whether the item is being edited
   const [isEditing, setIsEditing] = useState(false);
   const [editText, setEditText] = useState(todo.text);
   const [editDate, setEditDate] = useState(todo.createdAt);
 
+  // Convert DD/MM/YYYY to YYYY-MM-DD for <input type="date">
   const convertToDateInput = (ddmmyyyy) => {
     if (!ddmmyyyy) return '';
     const parts = ddmmyyyy.split('/');
@@ -17,24 +25,28 @@ function TodoItem({ todo, onDelete, onToggleComplete, onEdit }) {
     return ddmmyyyy;
   }
 
+  // Convert YYYY-MM-DD from date input back to DD/MM/YYYY for display
   const convertFromDateInput = (yyyyMMdd) => {
-  if (!yyyyMMdd) return '';
-  const parts = yyyyMMdd.split('-');
-  if (parts.length === 3) {
-    const [year, month, day] = parts;
-    return `${day}/${month}/${year}`;
+    if (!yyyyMMdd) return '';
+    const parts = yyyyMMdd.split('-');
+    if (parts.length === 3) {
+      const [year, month, day] = parts;
+      return `${day}/${month}/${year}`;
+    }
+    return yyyyMMdd;
   }
-  return yyyyMMdd;
-}
 
+  // Event handler for deleting a todo
   const handleDelete = () => {
     onDelete(todo.id);
   };
 
+  // Event handler for toggling completion
   const handleToggleComplete = () => {
     onToggleComplete(todo.id);
   }; 
 
+  // Save edited text/date
   const handleSave = () => {
     if (editText.trim()) {
       const formattedDate = convertFromDateInput(editDate);
@@ -43,12 +55,14 @@ function TodoItem({ todo, onDelete, onToggleComplete, onEdit }) {
     }
   }
 
+  // Cancel edit mode and restore original values
   const handleCancel = () => {
     setEditText(todo.text);
     setEditDate(todo.createdAt);
     setIsEditing(false);
   }
 
+  // Activate edit mode and convert displayed date for date input
   const handleEditClick = () => {
     setEditDate(convertToDateInput(todo.createdAt));
     setIsEditing(true);
@@ -56,6 +70,7 @@ function TodoItem({ todo, onDelete, onToggleComplete, onEdit }) {
 
   return (
     <div className={`todo-item ${todo.completed ? 'completed' : ''}`}>
+      {/* Checkbox Section */}
       <div className="todo-checkbox">
         <input
           type="checkbox"
@@ -64,6 +79,8 @@ function TodoItem({ todo, onDelete, onToggleComplete, onEdit }) {
           className="checkbox"
         />
       </div>
+
+      {/* Main Content Section (Edit Mode vs Display Mode) */}
       <div className="todo-content">
         {isEditing ? (
           <div className="edit-form">
@@ -90,6 +107,8 @@ function TodoItem({ todo, onDelete, onToggleComplete, onEdit }) {
           </>
         )}
       </div>
+
+      {/* Actions: Edit/Save/Delete */}
       <div className="todo-actions">
         {isEditing ? (
           <>
@@ -115,7 +134,12 @@ function TodoItem({ todo, onDelete, onToggleComplete, onEdit }) {
   );
 }
 
-// Todo List Component
+// =============================
+// TodoList Component
+// -----------------------------
+// Responsible for rendering the full list of todos
+// and showing the empty state if there are none.
+// =============================
 function TodoList({ todos, onDelete, onToggleComplete, onEdit }) {
   return (
     <div className="todo-list">
@@ -136,10 +160,16 @@ function TodoList({ todos, onDelete, onToggleComplete, onEdit }) {
   );
 }
 
-// Todo Input Component
+// =============================
+// TodoInput Component
+// -----------------------------
+// Handles adding new todo items through
+// a controlled input field and submit event.
+// =============================
 function TodoInput({ onAddTodo }) {
   const [inputValue, setInputValue] = useState('');
 
+  // Handle form submission (either button click or enter key)
   const handleSubmit = (e) => {
     e.preventDefault();
     if (inputValue.trim()) {
@@ -164,14 +194,22 @@ function TodoInput({ onAddTodo }) {
   );
 }
 
+// =============================
 // Main App Component
+// -----------------------------
+// - Loads todos from localStorage on mount
+// - Handles adding, deleting, editing, toggling
+// - Persists changes to localStorage
+// - Displays total outstanding and completed counts
+// =============================
 function App() {
+  // Initialize todos from localStorage on first load
   const [todos, setTodos] = useState(() => {
     const savedTodos = localStorage.getItem('todos');
     return savedTodos ? JSON.parse(savedTodos) : [];
   });
 
-  // Save todos to localStorage whenever todos change
+  // Sync todos to localStorage whenever state changes
   useEffect(() => {
     localStorage.setItem('todos', JSON.stringify(todos));
   }, [todos]);
@@ -187,41 +225,59 @@ function App() {
     setTodos([newTodo, ...todos]);
   };
 
-  // Delete todo function
+  // Delete specific todo by ID
   const deleteTodo = (id) => {
     setTodos(todos.filter(todo => todo.id !== id));
   };
 
-  // Toggle todo completion
+  // Toggle completion state of a todo
   const toggleComplete = (id) => {
     setTodos(todos.map(todo =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     ));
   };
 
+  // Edit existing todo (text and date)
   const editTodo = (id, nextText, nextDate) => {
     setTodos(todos.map(todo =>
       todo.id === id ? { ...todo, text: nextText, createdAt: nextDate } : todo
     ));
   }
 
-  // Calculate counts
+  // Calculate counters for footer display
   const completedCount = todos.filter(todo => todo.completed).length;
   const todoCount = todos.filter(todo => !todo.completed).length;
 
   return (
     <div className="App">
+      {/* =========================
+          Header Section
+         ========================= */}
       <header className="app-header">
         <h1>To-do List</h1>
       </header>
 
+      {/* =========================
+          Main Section
+         ========================= */}
       <main className="app-main">
         <TodoInput onAddTodo={addTodo} />
-        <TodoList todos={todos} onDelete={deleteTodo} onToggleComplete={toggleComplete} onEdit={editTodo} />
+        <TodoList
+          todos={todos}
+          onDelete={deleteTodo}
+          onToggleComplete={toggleComplete}
+          onEdit={editTodo}
+        />
       </main>
 
+      {/* =========================
+          Footer Section
+         ========================= */}
       <footer className="app-footer">
-        <p><strong>Outstanding Tasks: </strong>{todoCount} | <strong>Completed: </strong>{completedCount}</p>
+        <p>
+          <strong>Outstanding Tasks: </strong>{todoCount} |{' '}
+          <strong>Completed: </strong>{completedCount}
+        </p>
       </footer>
     </div>
   );
